@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI STORE MANAGER PRO 2.1</title>
+<title>AI STORE MANAGER PRO 2.2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--green:#146b50;--dark:#123b32;--bg:#f3f6fa;--text:#182230;--muted:#667085}
@@ -21,12 +22,12 @@ button.secondary{background:#e7f3ed;color:#126044}
 button.danger{background:#b42318;color:#fff}
 button.light{background:#eef2f6;color:#344054}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:9px}
 .card{margin:0;padding:10px}
 .card small{color:var(--muted);font-size:10px}
 .card strong{display:block;font-size:16px;margin-top:5px;overflow-wrap:anywhere}
 .nav{display:flex;gap:5px;overflow:auto;margin:9px 0;padding-bottom:2px}
-.nav button{min-width:80px;width:auto;white-space:nowrap;margin:0;padding:8px 10px;font-size:11px}
+.nav button{min-width:75px;width:auto;white-space:nowrap;margin:0;padding:8px 10px;font-size:11px}
 .hidden{display:none!important}
 .item{padding:8px 0;border-bottom:1px solid #edf0f2;line-height:1.5}
 .muted{color:var(--muted);font-size:10px}
@@ -34,19 +35,22 @@ button.light{background:#eef2f6;color:#344054}
 .actions button{width:auto;min-height:29px;padding:6px 9px;font-size:10px;margin:0}
 #status{font-size:11px;color:#087443;white-space:pre-wrap;margin:8px 2px}
 footer{text-align:center;color:#89939e;font-size:10px;padding:14px}
-.statline{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #f0f2f5}
+.statline{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid #f0f2f5}
 .statline span:first-child{color:#667085}
-.filter{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.filter{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 .modal{position:fixed;inset:0;background:#10182888;display:flex;align-items:center;justify-content:center;padding:14px;z-index:10}
 .modalbox{background:#fff;border-radius:12px;padding:14px;width:min(100%,420px);max-height:90vh;overflow:auto}
+.good{color:#087443!important}
+.bad{color:#b42318!important}
 @media(min-width:650px){.cards{grid-template-columns:repeat(4,minmax(0,1fr))}.filter{grid-template-columns:repeat(5,minmax(0,1fr))}}
 </style>
 </head>
 <body>
 <header>
 <h2>🏪 AI STORE MANAGER PRO</h2>
-<p>Trợ lý quản lý cửa hàng thông minh · Cloud 2.1</p>
+<p>Trợ lý quản lý cửa hàng thông minh · Cloud 2.2</p>
 </header>
+
 <main>
 <section id="auth" class="panel">
 <h3>🔐 Đăng nhập / Đăng ký</h3>
@@ -77,7 +81,7 @@ footer{text-align:center;color:#89939e;font-size:10px;padding:14px}
 
 <div class="cards">
 <div class="card"><small>Doanh thu hôm nay</small><strong id="revenue">0 ₫</strong></div>
-<div class="card"><small>Lợi nhuận gộp hôm nay</small><strong id="profit">0 ₫</strong></div>
+<div class="card"><small>Lợi nhuận gộp hôm nay (ước tính)</small><strong id="profit">0 ₫</strong></div>
 <div class="card"><small>Số mặt hàng</small><strong id="count">0</strong></div>
 <div class="card"><small>Giá trị tồn kho</small><strong id="stockValue">0 ₫</strong></div>
 </div>
@@ -87,6 +91,7 @@ footer{text-align:center;color:#89939e;font-size:10px;padding:14px}
 <button onclick="show('products')">Sản phẩm</button>
 <button onclick="show('purchase')">Nhập hàng</button>
 <button onclick="show('sales')">Bán hàng</button>
+<button onclick="show('expenses')">费用/Chi phí</button>
 </div>
 
 <section id="home">
@@ -101,7 +106,7 @@ footer{text-align:center;color:#89939e;font-size:10px;padding:14px}
 </div>
 <p class="muted" id="periodLabel">Đang xem: Hôm nay</p>
 <div id="summary"></div>
-<p class="muted">Lợi nhuận gộp ước tính, chưa trừ chi phí vận hành.</p>
+<p class="muted">Lợi nhuận gộp ước tính theo giá nhập hiện tại của sản phẩm. Lợi nhuận ròng = lợi nhuận gộp - chi phí đã ghi nhận.</p>
 </div>
 
 <div class="panel">
@@ -156,11 +161,37 @@ footer{text-align:center;color:#89939e;font-size:10px;padding:14px}
 <button onclick="sell()">Xác nhận bán hàng</button>
 </div>
 </section>
+
+<section id="expenses" class="hidden">
+<div class="panel">
+<h3>💸 Thêm chi phí cửa hàng</h3>
+<label class="muted">Ngày chi phí</label>
+<input id="expenseDate" type="date">
+<select id="expenseCategory">
+<option value="租金">租金 / Tiền thuê mặt bằng</option>
+<option value="工资">工资 / Lương nhân viên</option>
+<option value="水电">水电 / Điện nước</option>
+<option value="运输">运输 / Vận chuyển</option>
+<option value="营销">营销 / Marketing</option>
+<option value="维修">维修 / Sửa chữa</option>
+<option value="其他">其他 / Khác</option>
+</select>
+<input id="expenseDescription" placeholder="Mô tả chi phí">
+<input id="expenseAmount" type="number" min="1" step="any" placeholder="Số tiền (₫)">
+<button onclick="addExpense()">Lưu chi phí</button>
+</div>
+
+<div class="panel">
+<h3>📋 Danh sách chi phí</h3>
+<p class="muted">Danh sách theo bộ lọc thời gian đang chọn ở trang Tổng quan.</p>
+<div id="expenseList"></div>
+</div>
+</section>
 </div>
 </section>
 
 <p id="status"></p>
-<footer>AI STORE MANAGER PRO · Cloud Version 2.1</footer>
+<footer>AI STORE MANAGER PRO · Cloud Version 2.2</footer>
 </main>
 <div id="modalRoot"></div>
 
@@ -169,366 +200,207 @@ const SUPABASE_URL="https://owpfcmsrizmbyzimwlsk.supabase.co";
 const SUPABASE_KEY="sb_publishable_a434FlGqYzGtKIsRd_aHfA_nEUb-C1f";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let user=null;
-let store=null;
-let products=[];
-let transactions=[];
-let period="today";
+let user=null,store=null,products=[],transactions=[],expenses=[],period="today";
 
-function msg(t){
- document.getElementById("status").textContent=t;
-}
-
-function money(n){
- return Number(n||0).toLocaleString("vi-VN")+" ₫";
-}
-
-function esc(s){
- return String(s??"").replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
- }[c]));
-}
-
-function val(id){
- return document.getElementById(id).value.trim();
-}
-
-function show(id){
- ["home","products","purchase","sales"].forEach(x=>
-  document.getElementById(x).classList.toggle("hidden",x!==id)
- );
-}
-
-function dateKey(d){
- const x=new Date(d);
- return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`;
-}
+function msg(t){document.getElementById("status").textContent=t}
+function money(n){return Number(n||0).toLocaleString("vi-VN")+" ₫"}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function val(id){return document.getElementById(id).value.trim()}
+function localDate(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function dateKey(d){const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`}
+function show(id){["home","products","purchase","sales","expenses"].forEach(x=>document.getElementById(x).classList.toggle("hidden",x!==id))}
+function line(label,value){return `<div class="statline"><span>${label}</span><b>${value}</b></div>`}
 
 function inPeriod(date){
  const d=new Date(date),now=new Date(),today=dateKey(now),key=dateKey(d);
  if(period==="all")return true;
  if(period==="today")return key===today;
- if(period==="yesterday"){
-  const y=new Date(now);
-  y.setDate(y.getDate()-1);
-  return key===dateKey(y);
- }
+ if(period==="yesterday"){const y=new Date(now);y.setDate(y.getDate()-1);return key===dateKey(y)}
  if(period==="month")return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
  if(period==="year")return d.getFullYear()===now.getFullYear();
  return false;
 }
-
-function setPeriod(p){
- period=p;
- render();
-}
+function setPeriod(p){period=p;render()}
 
 async function signUp(){
  const email=val("email"),password=val("password");
- if(!email||password.length<6){
-  msg("Vui lòng nhập email và mật khẩu ít nhất 6 ký tự.");
-  return;
- }
+ if(!email||password.length<6){msg("Vui lòng nhập email và mật khẩu ít nhất 6 ký tự.");return}
  const {data,error}=await db.auth.signUp({email,password});
- if(error){msg(error.message);return;}
- if(data.session){
-  user=data.user;
-  await openApp();
- }else{
-  msg("Đăng ký thành công. Hãy xác nhận email rồi đăng nhập.");
- }
+ if(error){msg(error.message);return}
+ if(data.session){user=data.user;await openApp()}
+ else msg("Đăng ký thành công. Hãy xác nhận email rồi đăng nhập.")
 }
-
 async function signIn(){
  const email=val("email"),password=val("password");
  const {data,error}=await db.auth.signInWithPassword({email,password});
- if(error){msg(error.message);return;}
- user=data.user;
- await openApp();
+ if(error){msg(error.message);return}
+ user=data.user;await openApp()
 }
-
 async function signOut(){
- await db.auth.signOut();
- user=null;
- store=null;
+ await db.auth.signOut();user=null;store=null;
  document.getElementById("app").classList.add("hidden");
  document.getElementById("auth").classList.remove("hidden");
- msg("Đã đăng xuất.");
+ msg("Đã đăng xuất.")
 }
-
 async function openApp(){
  document.getElementById("auth").classList.add("hidden");
  document.getElementById("app").classList.remove("hidden");
  document.getElementById("accountInfo").textContent="Tài khoản: "+user.email;
-
- const {data,error}=await db.from("stores")
-  .select("*").order("created_at",{ascending:true}).limit(1);
-
- if(error){msg("Lỗi tải cửa hàng: "+error.message);return;}
-
- if(!data||data.length===0){
+ const {data,error}=await db.from("stores").select("*").order("created_at",{ascending:true}).limit(1);
+ if(error){msg("Lỗi tải cửa hàng: "+error.message);return}
+ if(!data||!data.length){
   document.getElementById("storeSetup").classList.remove("hidden");
-  document.getElementById("storeArea").classList.add("hidden");
-  return;
+  document.getElementById("storeArea").classList.add("hidden");return
  }
-
- store=data[0];
- await loadData();
+ store=data[0];await loadData()
 }
-
 async function createStore(){
  const name=val("storeName");
- if(!name){msg("Vui lòng nhập tên cửa hàng.");return;}
-
- const {data,error}=await db.from("stores")
-  .insert({owner_id:user.id,store_name:name})
-  .select().single();
-
- if(error){msg("Không tạo được cửa hàng: "+error.message);return;}
- store=data;
- await loadData();
+ if(!name){msg("Vui lòng nhập tên cửa hàng.");return}
+ const {data,error}=await db.from("stores").insert({owner_id:user.id,store_name:name}).select().single();
+ if(error){msg("Không tạo được cửa hàng: "+error.message);return}
+ store=data;await loadData()
 }
-
 async function loadData(){
  if(!store)return;
-
  document.getElementById("storeSetup").classList.add("hidden");
  document.getElementById("storeArea").classList.remove("hidden");
  document.getElementById("storeTitle").textContent="🏪 "+store.store_name;
 
- const [pr,tr]=await Promise.all([
+ const [pr,tr,ex]=await Promise.all([
   db.from("products").select("*").eq("store_id",store.id).order("created_at",{ascending:false}),
-  db.from("inventory_transactions").select("*").eq("store_id",store.id).order("created_at",{ascending:false})
+  db.from("inventory_transactions").select("*").eq("store_id",store.id).order("created_at",{ascending:false}),
+  db.from("expenses").select("*").eq("store_id",store.id).order("expense_date",{ascending:false})
  ]);
-
- if(pr.error||tr.error){
-  msg("Lỗi tải dữ liệu: "+(pr.error?.message||tr.error?.message));
-  return;
+ if(pr.error||tr.error||ex.error){
+  msg("Lỗi tải dữ liệu: "+(pr.error?.message||tr.error?.message||ex.error?.message)+"。请检查 expenses 表的 RLS 权限。");
+  if(pr.error||tr.error)return;
  }
-
- products=pr.data||[];
- transactions=tr.data||[];
- render();
+ products=pr.data||[];transactions=tr.data||[];expenses=ex.data||[];
+ render()
 }
-
 async function addProduct(){
- const name=val("pname");
- const cost=Number(val("pcost"));
- const price=Number(val("pprice"));
- const stock=Number(val("pstock"));
-
- if(!name||val("pcost")===""||val("pprice")===""||val("pstock")===""||cost<0||price<=0||stock<0){
-  msg("Vui lòng nhập thông tin sản phẩm hợp lệ.");
-  return;
- }
-
- const {data,error}=await db.from("products").insert({
-  store_id:store.id,
-  name,
-  cost_price:cost,
-  selling_price:price,
-  stock:0
- }).select().single();
-
- if(error){msg("Lỗi lưu sản phẩm: "+error.message);return;}
-
+ const name=val("pname"),cost=Number(val("pcost")),price=Number(val("pprice")),stock=Number(val("pstock"));
+ if(!name||val("pcost")===""||val("pprice")===""||val("pstock")===""||cost<0||price<=0||stock<0){msg("Vui lòng nhập thông tin sản phẩm hợp lệ.");return}
+ const {data,error}=await db.from("products").insert({store_id:store.id,name,cost_price:cost,selling_price:price,stock:0}).select().single();
+ if(error){msg("Lỗi lưu sản phẩm: "+error.message);return}
  if(stock>0){
-  const {error:txError}=await db.rpc("record_inventory_transaction",{
-   p_store_id:store.id,
-   p_product_id:data.id,
-   p_type:"purchase",
-   p_quantity:stock,
-   p_unit_price:cost
-  });
-
-  if(txError){
-   msg("Sản phẩm đã tạo nhưng nhập tồn ban đầu chưa thành công: "+txError.message);
-   await loadData();
-   return;
-  }
+  const {error:e}=await db.rpc("record_inventory_transaction",{p_store_id:store.id,p_product_id:data.id,p_type:"purchase",p_quantity:stock,p_unit_price:cost});
+  if(e){msg("Sản phẩm đã tạo nhưng nhập tồn ban đầu chưa thành công: "+e.message);await loadData();return}
  }
-
  ["pname","pcost","pprice","pstock"].forEach(id=>document.getElementById(id).value="");
- msg("Đã lưu sản phẩm lên hệ thống.");
- await loadData();
+ msg("Đã lưu sản phẩm.");await loadData()
 }
-
 async function doTransaction(type){
- const isBuy=type==="purchase";
- const id=document.getElementById(isBuy?"buyProduct":"sellProduct").value;
- const qty=Number(val(isBuy?"buyQty":"sellQty"));
- const price=Number(val(isBuy?"buyCost":"sellPrice"));
-
- if(!id||qty<=0||price<0||!val(isBuy?"buyCost":"sellPrice")||(!isBuy&&price===0)){
-  msg("Vui lòng kiểm tra số lượng và đơn giá.");
-  return;
- }
-
- const {error}=await db.rpc("record_inventory_transaction",{
-  p_store_id:store.id,
-  p_product_id:id,
-  p_type:type,
-  p_quantity:qty,
-  p_unit_price:price
- });
-
- if(error){msg("Giao dịch không thành công: "+error.message);return;}
-
- document.getElementById(isBuy?"buyQty":"sellQty").value="";
- document.getElementById(isBuy?"buyCost":"sellPrice").value="";
- msg(isBuy?"Đã nhập hàng thành công.":"Đã ghi nhận bán hàng thành công.");
- await loadData();
+ const buy=type==="purchase",id=document.getElementById(buy?"buyProduct":"sellProduct").value;
+ const qty=Number(val(buy?"buyQty":"sellQty")),price=Number(val(buy?"buyCost":"sellPrice"));
+ if(!id||qty<=0||price<0||!val(buy?"buyCost":"sellPrice")||(!buy&&price===0)){msg("Vui lòng kiểm tra số lượng và đơn giá.");return}
+ const {error}=await db.rpc("record_inventory_transaction",{p_store_id:store.id,p_product_id:id,p_type:type,p_quantity:qty,p_unit_price:price});
+ if(error){msg("Giao dịch không thành công: "+error.message);return}
+ document.getElementById(buy?"buyQty":"sellQty").value="";
+ document.getElementById(buy?"buyCost":"sellPrice").value="";
+ msg(buy?"Đã nhập hàng thành công.":"Đã ghi nhận bán hàng thành công.");await loadData()
 }
+async function purchase(){await doTransaction("purchase")}
+async function sell(){await doTransaction("sale")}
 
-async function purchase(){await doTransaction("purchase");}
-async function sell(){await doTransaction("sale");}
-
-function closeModal(){
- document.getElementById("modalRoot").innerHTML="";
-}
-
+function closeModal(){document.getElementById("modalRoot").innerHTML=""}
 function openProductEdit(id){
- const p=products.find(x=>x.id===id);
- if(!p)return;
-
- document.getElementById("modalRoot").innerHTML=`
- <div class="modal"><div class="modalbox">
+ const p=products.find(x=>x.id===id);if(!p)return;
+ document.getElementById("modalRoot").innerHTML=`<div class="modal"><div class="modalbox">
  <h3>✏️ Sửa sản phẩm</h3>
  <input id="editName" value="${esc(p.name)}" placeholder="Tên sản phẩm">
- <input id="editCost" type="number" min="0" value="${Number(p.cost_price)}" placeholder="Giá nhập">
- <input id="editPrice" type="number" min="0" value="${Number(p.selling_price)}" placeholder="Giá bán">
- <p class="muted">Tồn kho hiện tại: ${esc(p.stock)}. Muốn thay đổi tồn kho, hãy dùng chức năng Nhập hàng.</p>
+ <input id="editCost" type="number" min="0" value="${Number(p.cost_price)}">
+ <input id="editPrice" type="number" min="0" value="${Number(p.selling_price)}">
+ <p class="muted">Tồn kho hiện tại: ${esc(p.stock)}。Muốn thay đổi tồn kho，请使用 nhập hàng。</p>
  <button onclick="saveProduct('${p.id}')">Lưu thay đổi</button>
- <button class="light" onclick="closeModal()">Đóng</button>
- </div></div>`;
+ <button class="light" onclick="closeModal()">Đóng</button></div></div>`
 }
-
 async function saveProduct(id){
- const name=document.getElementById("editName").value.trim();
- const cost=Number(document.getElementById("editCost").value);
- const price=Number(document.getElementById("editPrice").value);
-
- if(!name||cost<0||price<=0){
-  msg("Vui lòng nhập tên và mức giá hợp lệ.");
-  return;
- }
-
- const {error}=await db.from("products")
-  .update({name,cost_price:cost,selling_price:price})
-  .eq("id",id).eq("store_id",store.id);
-
- if(error){msg("Không sửa được sản phẩm: "+error.message);return;}
-
- closeModal();
- msg("Đã cập nhật sản phẩm.");
- await loadData();
+ const name=val("editName"),cost=Number(val("editCost")),price=Number(val("editPrice"));
+ if(!name||cost<0||price<=0){msg("Vui lòng nhập giá hợp lệ.");return}
+ const {error}=await db.from("products").update({name,cost_price:cost,selling_price:price}).eq("id",id).eq("store_id",store.id);
+ if(error){msg("Không sửa được sản phẩm: "+error.message);return}
+ closeModal();msg("Đã cập nhật sản phẩm.");await loadData()
 }
-
 async function deleteProduct(id){
- const p=products.find(x=>x.id===id);
- if(!p)return;
-
+ const p=products.find(x=>x.id===id);if(!p)return;
  if(!confirm(`Xóa sản phẩm "${p.name}"? Chỉ xóa được sản phẩm chưa có giao dịch.`))return;
-
- const {count,error:checkError}=await db.from("inventory_transactions")
-  .select("id",{count:"exact",head:true})
-  .eq("product_id",id).eq("store_id",store.id);
-
- if(checkError){msg("Không kiểm tra được giao dịch: "+checkError.message);return;}
-
- if(count>0){
-  msg("Sản phẩm đã có giao dịch, không thể xóa để tránh làm sai lịch sử và tồn kho.");
-  return;
- }
-
- const {error}=await db.from("products")
-  .delete().eq("id",id).eq("store_id",store.id);
-
- if(error){msg("Không xóa được sản phẩm: "+error.message);return;}
-
- msg("Đã xóa sản phẩm.");
- await loadData();
+ const {count,error:ce}=await db.from("inventory_transactions").select("id",{count:"exact",head:true}).eq("product_id",id).eq("store_id",store.id);
+ if(ce){msg(ce.message);return}
+ if(count>0){msg("Sản phẩm đã có giao dịch，不能删除。");return}
+ const {error}=await db.from("products").delete().eq("id",id).eq("store_id",store.id);
+ if(error){msg(error.message);return}
+ msg("Đã xóa sản phẩm.");await loadData()
 }
-
 function openTransactionEdit(id){
- const t=transactions.find(x=>x.id===id);
- if(!t)return;
-
- const kind=t.transaction_type==="purchase"?"Nhập hàng":"Bán hàng";
-
- document.getElementById("modalRoot").innerHTML=`
- <div class="modal"><div class="modalbox">
- <h3>✏️ Sửa giao dịch · ${kind}</h3>
- <p class="muted">Sản phẩm: ${esc(products.find(p=>p.id===t.product_id)?.name||"Sản phẩm")}</p>
- <input id="txQty" type="number" min="0.0001" step="any" value="${Number(t.quantity)}" placeholder="Số lượng">
- <input id="txPrice" type="number" min="0" step="any" value="${Number(t.unit_price)}" placeholder="Đơn giá">
- <p class="muted">Cần tạo hàm update_inventory_transaction trong Supabase để đồng bộ tồn kho.</p>
+ const t=transactions.find(x=>x.id===id);if(!t)return;
+ document.getElementById("modalRoot").innerHTML=`<div class="modal"><div class="modalbox">
+ <h3>✏️ Sửa giao dịch</h3>
+ <p class="muted">产品：${esc(products.find(p=>p.id===t.product_id)?.name||"产品")}</p>
+ <input id="txQty" type="number" min="0.0001" step="any" value="${Number(t.quantity)}">
+ <input id="txPrice" type="number" min="0" step="any" value="${Number(t.unit_price)}">
  <button onclick="saveTransaction('${t.id}')">Lưu thay đổi</button>
- <button class="light" onclick="closeModal()">Đóng</button>
- </div></div>`;
+ <button class="light" onclick="closeModal()">Đóng</button></div></div>`
 }
-
 async function saveTransaction(id){
- const qty=Number(document.getElementById("txQty").value);
- const price=Number(document.getElementById("txPrice").value);
-
- if(qty<=0||price<0){
-  msg("Số lượng hoặc đơn giá không hợp lệ.");
-  return;
- }
-
- const {error}=await db.rpc("update_inventory_transaction",{
-  p_store_id:store.id,
-  p_transaction_id:id,
-  p_quantity:qty,
-  p_unit_price:price
- });
-
- if(error){
-  msg("尚未启用记录修改功能：Supabase 缺少 update_inventory_transaction 函数。");
-  return;
- }
-
- closeModal();
- msg("Đã cập nhật giao dịch và tồn kho.");
- await loadData();
+ const qty=Number(val("txQty")),price=Number(val("txPrice"));
+ if(qty<=0||price<0){msg("Số lượng hoặc đơn giá không hợp lệ.");return}
+ const {error}=await db.rpc("update_inventory_transaction",{p_store_id:store.id,p_transaction_id:id,p_quantity:qty,p_unit_price:price});
+ if(error){msg("修改失败："+error.message);return}
+ closeModal();msg("Đã cập nhật giao dịch.");await loadData()
 }
-
 async function deleteTransaction(id){
- if(!confirm("Xóa giao dịch này? Tồn kho phải được điều chỉnh ngược lại."))return;
-
- const {error}=await db.rpc("delete_inventory_transaction",{
-  p_store_id:store.id,
-  p_transaction_id:id
- });
-
- if(error){
-  msg("尚未启用记录删除功能：Supabase 缺少 delete_inventory_transaction 函数。");
-  return;
- }
-
- msg("Đã xóa giao dịch và điều chỉnh tồn kho.");
- await loadData();
+ if(!confirm("Xóa giao dịch này? Tồn kho sẽ được điều chỉnh ngược lại."))return;
+ const {error}=await db.rpc("delete_inventory_transaction",{p_store_id:store.id,p_transaction_id:id});
+ if(error){msg("删除失败："+error.message);return}
+ msg("Đã xóa giao dịch.");await loadData()
 }
 
-function line(label,value){
- return `<div class="statline"><span>${label}</span><b>${value}</b></div>`;
+/* EXPENSE MANAGEMENT */
+const categories=["租金","工资","水电","运输","营销","维修","其他"];
+async function addExpense(){
+ const date=val("expenseDate"),category=val("expenseCategory"),description=val("expenseDescription"),amount=Number(val("expenseAmount"));
+ if(!date||!category||amount<=0||!Number.isFinite(amount)){msg("请填写有效的日期、类别和金额。");return}
+ const {error}=await db.from("expenses").insert({
+  store_id:store.id,expense_date:date,category,description,amount
+ });
+ if(error){msg("费用保存失败："+error.message+"。请检查 expenses 表的 RLS 权限。");return}
+ document.getElementById("expenseDescription").value="";
+ document.getElementById("expenseAmount").value="";
+ msg("费用已保存。");await loadData()
+}
+function openExpenseEdit(id){
+ const e=expenses.find(x=>x.id===id);if(!e)return;
+ const opts=categories.map(c=>`<option value="${c}" ${c===e.category?"selected":""}>${c}</option>`).join("");
+ document.getElementById("modalRoot").innerHTML=`<div class="modal"><div class="modalbox">
+ <h3>✏️ 编辑费用</h3>
+ <input id="editExpenseDate" type="date" value="${esc(e.expense_date)}">
+ <select id="editExpenseCategory">${opts}</select>
+ <input id="editExpenseDescription" value="${esc(e.description||"")}" placeholder="费用说明">
+ <input id="editExpenseAmount" type="number" min="0.01" step="any" value="${Number(e.amount)}">
+ <button onclick="saveExpense('${e.id}')">保存修改</button>
+ <button class="light" onclick="closeModal()">关闭</button>
+ </div></div>`
+}
+async function saveExpense(id){
+ const expense_date=val("editExpenseDate"),category=val("editExpenseCategory"),description=val("editExpenseDescription"),amount=Number(val("editExpenseAmount"));
+ if(!expense_date||!category||amount<=0){msg("费用信息不正确。");return}
+ const {error}=await db.from("expenses").update({expense_date,category,description,amount}).eq("id",id).eq("store_id",store.id);
+ if(error){msg("费用修改失败："+error.message);return}
+ closeModal();msg("费用已修改。");await loadData()
+}
+async function deleteExpense(id){
+ if(!confirm("确定删除这笔费用吗？"))return;
+ const {error}=await db.from("expenses").delete().eq("id",id).eq("store_id",store.id);
+ if(error){msg("费用删除失败："+error.message);return}
+ msg("费用已删除。");await loadData()
 }
 
 function render(){
- const todaySales=transactions.filter(t=>
-  t.transaction_type==="sale"&&dateKey(t.created_at)===dateKey(new Date())
- );
-
- const todayRevenue=todaySales.reduce((a,t)=>
-  a+Number(t.quantity)*Number(t.unit_price),0
- );
-
- const todayProfit=todaySales.reduce((a,t)=>{
-  const p=products.find(x=>x.id===t.product_id);
-  return a+Number(t.quantity)*(Number(t.unit_price)-Number(p?.cost_price||0));
- },0);
-
+ const todaySales=transactions.filter(t=>t.transaction_type==="sale"&&dateKey(t.created_at)===dateKey(new Date()));
+ const todayRevenue=todaySales.reduce((a,t)=>a+Number(t.quantity)*Number(t.unit_price),0);
+ const todayProfit=todaySales.reduce((a,t)=>{const p=products.find(x=>x.id===t.product_id);return a+Number(t.quantity)*(Number(t.unit_price)-Number(p?.cost_price||0))},0);
  const stockQty=products.reduce((a,p)=>a+Number(p.stock),0);
  const stockCost=products.reduce((a,p)=>a+Number(p.stock)*Number(p.cost_price),0);
  const stockSell=products.reduce((a,p)=>a+Number(p.stock)*Number(p.selling_price),0);
@@ -536,25 +408,15 @@ function render(){
  const filtered=transactions.filter(t=>inPeriod(t.created_at));
  const sales=filtered.filter(t=>t.transaction_type==="sale");
  const buys=filtered.filter(t=>t.transaction_type==="purchase");
-
+ const filteredExpenses=expenses.filter(e=>inPeriod(e.expense_date+"T12:00:00"));
  const revenue=sales.reduce((a,t)=>a+Number(t.quantity)*Number(t.unit_price),0);
  const purchaseTotal=buys.reduce((a,t)=>a+Number(t.quantity)*Number(t.unit_price),0);
-
- const gross=sales.reduce((a,t)=>{
-  const p=products.find(x=>x.id===t.product_id);
-  return a+Number(t.quantity)*(Number(t.unit_price)-Number(p?.cost_price||0));
- },0);
-
+ const gross=sales.reduce((a,t)=>{const p=products.find(x=>x.id===t.product_id);return a+Number(t.quantity)*(Number(t.unit_price)-Number(p?.cost_price||0))},0);
+ const expenseTotal=filteredExpenses.reduce((a,e)=>a+Number(e.amount),0);
+ const net=gross-expenseTotal;
  const qtySold=sales.reduce((a,t)=>a+Number(t.quantity),0);
  const qtyBought=buys.reduce((a,t)=>a+Number(t.quantity),0);
-
- const labels={
-  today:"Hôm nay",
-  yesterday:"Hôm qua",
-  month:"Tháng này",
-  year:"Năm nay",
-  all:"Tất cả"
- };
+ const labels={today:"Hôm nay",yesterday:"Hôm qua",month:"Tháng này",year:"Năm nay",all:"Tất cả"};
 
  document.getElementById("periodLabel").textContent="Đang xem: "+labels[period];
  document.getElementById("revenue").textContent=money(todayRevenue);
@@ -563,65 +425,50 @@ function render(){
  document.getElementById("stockValue").textContent=money(stockCost);
 
  document.getElementById("summary").innerHTML=
-  line("Tổng doanh thu",money(revenue))+
-  line("Tổng tiền nhập hàng",money(purchaseTotal))+
-  line("Lợi nhuận gộp ước tính",money(gross))+
-  line("Số giao dịch bán",sales.length)+
-  line("Số lượng đã bán",qtySold)+
-  line("Số giao dịch nhập",buys.length)+
-  line("Số lượng đã nhập",qtyBought);
+  line("销售收入 / Doanh thu",money(revenue))+
+  line("采购金额 / Tiền nhập hàng（参考）",money(purchaseTotal))+
+  line("估算毛利润 / Lợi nhuận gộp",money(gross))+
+  line("运营费用 / Chi phí",money(expenseTotal))+
+  `<div class="statline"><span><b>净利润 / 亏损</b></span><b class="${net>=0?"good":"bad"}">${net>=0?"盈利 / Lãi: ":"亏损 / Lỗ: "}${money(net)}</b></div>`+
+  line("销售交易数量",sales.length)+
+  line("销售商品数量",qtySold)+
+  line("采购交易数量",buys.length)+
+  line("采购商品数量",qtyBought);
 
  document.getElementById("inventorySummary").innerHTML=
-  line("Tổng số loại sản phẩm",products.length)+
-  line("Tổng số lượng tồn kho",stockQty)+
-  line("Giá trị tồn kho theo giá nhập",money(stockCost))+
-  line("Giá trị tồn kho theo giá bán",money(stockSell));
+  line("商品种类",products.length)+line("库存总数量",stockQty)+
+  line("库存进货价值",money(stockCost))+line("库存销售价值",money(stockSell));
 
  document.getElementById("alerts").innerHTML=
-  products.filter(p=>Number(p.stock)<=5).map(p=>
-   `<div class="item">⚠️ ${esc(p.name)} còn ${Number(p.stock)} sản phẩm</div>`
-  ).join("")||"Chưa có sản phẩm sắp hết hàng.";
+  products.filter(p=>Number(p.stock)<=5).map(p=>`<div class="item">⚠️ ${esc(p.name)} còn ${Number(p.stock)} sản phẩm</div>`).join("")||"Chưa có sản phẩm sắp hết hàng.";
 
- document.getElementById("productList").innerHTML=
-  products.map(p=>`
-   <div class="item">
-   <b>${esc(p.name)}</b><br>
-   <span class="muted">Giá nhập: ${money(p.cost_price)} · Giá bán: ${money(p.selling_price)} · Tồn: ${esc(p.stock)}</span>
-   <div class="actions">
-   <button class="secondary" onclick="openProductEdit('${p.id}')">Sửa</button>
-   <button class="danger" onclick="deleteProduct('${p.id}')">Xóa</button>
-   </div>
-   </div>
-  `).join("")||"Chưa có sản phẩm.";
+ document.getElementById("productList").innerHTML=products.map(p=>`
+  <div class="item"><b>${esc(p.name)}</b><br>
+  <span class="muted">Giá nhập: ${money(p.cost_price)} · Giá bán: ${money(p.selling_price)} · Tồn: ${esc(p.stock)}</span>
+  <div class="actions"><button class="secondary" onclick="openProductEdit('${p.id}')">Sửa</button><button class="danger" onclick="deleteProduct('${p.id}')">Xóa</button></div></div>
+ `).join("")||"Chưa có sản phẩm.";
 
- const options=products.map(p=>
-  `<option value="${p.id}">${esc(p.name)} (Tồn: ${esc(p.stock)})</option>`
- ).join("");
-
+ const options=products.map(p=>`<option value="${p.id}">${esc(p.name)} (Tồn: ${esc(p.stock)})</option>`).join("");
  document.getElementById("buyProduct").innerHTML=options;
  document.getElementById("sellProduct").innerHTML=options;
 
- document.getElementById("history").innerHTML=
-  transactions.slice(0,30).map(t=>{
-   const p=products.find(x=>x.id===t.product_id);
-   const isBuy=t.transaction_type==="purchase";
+ document.getElementById("history").innerHTML=transactions.slice(0,30).map(t=>{
+  const p=products.find(x=>x.id===t.product_id),buy=t.transaction_type==="purchase";
+  return `<div class="item"><b>${buy?"📥 Nhập hàng":"🛒 Bán hàng"} · ${esc(p?.name||"Sản phẩm")}</b><br>
+  <span class="muted">Số lượng: ${esc(t.quantity)} · Đơn giá: ${money(t.unit_price)} · ${new Date(t.created_at).toLocaleString("vi-VN")}</span>
+  <div class="actions"><button class="secondary" onclick="openTransactionEdit('${t.id}')">Sửa</button><button class="danger" onclick="deleteTransaction('${t.id}')">Xóa</button></div></div>`
+ }).join("")||"Chưa có giao dịch.";
 
-   return `<div class="item">
-   <b>${isBuy?"📥 Nhập hàng":"🛒 Bán hàng"} · ${esc(p?.name||"Sản phẩm")}</b><br>
-   <span class="muted">Số lượng: ${esc(t.quantity)} · Đơn giá: ${money(t.unit_price)} · ${new Date(t.created_at).toLocaleString("vi-VN")}</span>
-   <div class="actions">
-   <button class="secondary" onclick="openTransactionEdit('${t.id}')">Sửa</button>
-   <button class="danger" onclick="deleteTransaction('${t.id}')">Xóa</button>
-   </div>
-   </div>`;
-  }).join("")||"Chưa có giao dịch.";
+ document.getElementById("expenseList").innerHTML=filteredExpenses.map(e=>`
+  <div class="item"><b>💸 ${esc(e.category)} · ${money(e.amount)}</b><br>
+  <span class="muted">${esc(e.expense_date)} · ${esc(e.description||"无说明")}</span>
+  <div class="actions"><button class="secondary" onclick="openExpenseEdit('${e.id}')">编辑</button><button class="danger" onclick="deleteExpense('${e.id}')">删除</button></div></div>
+ `).join("")||"这个期间还没有费用记录。";
 }
 
+document.getElementById("expenseDate").value=localDate();
 db.auth.getSession().then(async({data})=>{
- if(data.session){
-  user=data.session.user;
-  await openApp();
- }
+ if(data.session){user=data.session.user;await openApp()}
 });
 </script>
 </body>
