@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI STORE MANAGER PRO</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f6fa;color:#182230;font-family:Arial,sans-serif}
+header{background:#123b32;color:white;padding:22px 17px}
+header h2{margin:0 0 6px;font-size:21px}
+header p{margin:0;color:#c9e5d8;font-size:13px}
+main{max-width:850px;margin:auto;padding:15px}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card,.panel{background:white;border-radius:13px;padding:15px;margin-bottom:12px;box-shadow:0 2px 8px #0000000a}
+.card small{color:#667085}
+.card strong{display:block;font-size:20px;margin-top:9px}
+.panel h3{margin:0 0 14px;font-size:16px}
+input,select,button{width:100%;padding:12px;margin:5px 0;border:1px solid #d6dde5;border-radius:8px;font-size:14px}
+button{background:#147d59;color:white;border:0;font-weight:bold;cursor:pointer}
+button.secondary{background:#e7f3ed;color:#126044}
+button.danger{background:#fff0ef;color:#b42318}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:10px 5px;border-bottom:1px solid #eee}
+th{color:#667085}
+.muted{color:#667085;font-size:12px}
+#message{color:#087443;font-size:13px}
+.nav{display:flex;gap:7px;overflow:auto;margin:12px 0}
+.nav button{min-width:100px;margin:0}
+.hidden{display:none}
+.item{padding:10px 0;border-bottom:1px solid #eee}
+footer{text-align:center;color:#89939e;font-size:12px;padding:20px}
+@media(max-width:420px){.cards{grid-template-columns:1fr 1fr}.card strong{font-size:17px}}
+</style>
+</head>
+<body>
+
+<header>
+<h2>🏪 AI STORE MANAGER PRO</h2>
+<p>Trợ lý quản lý cửa hàng thông minh</p>
+</header>
+
+<main>
+<div class="cards">
+<div class="card"><small>Doanh thu hôm nay</small><strong id="revenue">0 ₫</strong></div>
+<div class="card"><small>Lợi nhuận gộp hôm nay</small><strong id="profit">0 ₫</strong></div>
+<div class="card"><small>Số mặt hàng</small><strong id="count">0</strong></div>
+<div class="card"><small>Giá trị tồn kho</small><strong id="stockValue">0 ₫</strong></div>
+</div>
+
+<div class="nav">
+<button onclick="show('home')">Tổng quan</button>
+<button onclick="show('products')">Sản phẩm</button>
+<button onclick="show('purchase')">Nhập hàng</button>
+<button onclick="show('sales')">Bán hàng</button>
+<button onclick="show('ai')">AI店长</button>
+</div>
+
+<section id="home">
+<div class="panel">
+<h3>📊 Tổng quan cửa hàng</h3>
+<p class="muted">Dữ liệu được lưu trên thiết bị hiện tại.</p>
+<div id="summary"></div>
+</div>
+<div class="panel">
+<h3>⚠️ Cảnh báo tồn kho</h3>
+<div id="alerts">Chưa có dữ liệu</div>
+</div>
+</section>
+
+<section id="products" class="hidden">
+<div class="panel">
+<h3>➕ Thêm sản phẩm</h3>
+<input id="pname" placeholder="Tên sản phẩm">
+<div class="row">
+<input id="pcost" type="number" min="0" placeholder="Giá nhập (₫)">
+<input id="pprice" type="number" min="0" placeholder="Giá bán (₫)">
+</div>
+<input id="pstock" type="number" min="0" placeholder="Số lượng ban đầu">
+<button onclick="addProduct()">Lưu sản phẩm</button>
+<p id="message"></p>
+</div>
+<div class="panel">
+<h3>📦 Danh sách sản phẩm</h3>
+<div id="productList"></div>
+</div>
+</section>
+
+<section id="purchase" class="hidden">
+<div class="panel">
+<h3>📥 Nhập hàng</h3>
+<select id="buyProduct"></select>
+<input id="buyQty" type="number" min="1" placeholder="Số lượng nhập">
+<input id="buyCost" type="number" min="0" placeholder="Giá nhập mỗi sản phẩm (₫)">
+<button onclick="purchase()">Xác nhận nhập hàng</button>
+</div>
+<div class="panel">
+<h3>📷 Chụp hóa đơn nhập hàng</h3>
+<p class="muted">Chọn ảnh hóa đơn để chuẩn bị nhận diện bằng AI.</p>
+<input type="file" accept="image/*" capture="environment" id="receipt">
+<p class="muted" id="photoStatus">Chưa chọn ảnh</p>
+<button class="secondary" onclick="alert('Chức năng AI OCR sẽ được kết nối ở phiên bản tiếp theo. Hiện tại hãy nhập thông tin thủ công.')">AI đọc hóa đơn</button>
+</div>
+</section>
+
+<section id="sales" class="hidden">
+<div class="panel">
+<h3>🛒 Ghi nhận bán hàng</h3>
+<select id="sellProduct"></select>
+<input id="sellQty" type="number" min="1" placeholder="Số lượng bán">
+<input id="sellPrice" type="number" min="0" placeholder="Giá bán mỗi sản phẩm (₫)">
+<button onclick="sell()">Xác nhận bán hàng</button>
+</div>
+</section>
+
+<section id="ai" class="hidden">
+<div class="panel">
+<h3>🤖 AI STORE ASSISTANT</h3>
+<p class="muted">Trợ lý thử nghiệm: phân tích dựa trên dữ liệu cửa hàng đã nhập.</p>
+<input id="question" placeholder="Ví dụ: Hôm nay cửa hàng thế nào?">
+<button onclick="askAI()">Phân tích cửa hàng</button>
+<div id="answer" style="margin-top:15px;line-height:1.7"></div>
+</div>
+</section>
+
+<footer>AI STORE MANAGER PRO · Phiên bản thử nghiệm 1.0</footer>
+</main>
+
+<script>
+const KEY="ai_store_manager_v1";
+let data=JSON.parse(localStorage.getItem(KEY)||'{"products":[],"sales":[]}');
+
+function save(){
+ localStorage.setItem(KEY,JSON.stringify(data));
+ render();
+}
+function money(n){
+ return Number(n||0).toLocaleString("vi-VN")+" ₫";
+}
+function show(id){
+ document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
+ render();
+}
+function addProduct(){
+ let name=document.getElementById("pname").value.trim();
+ let cost=Number(document.getElementById("pcost").value);
+ let price=Number(document.getElementById("pprice").value);
+ let stock=Number(document.getElementById("pstock").value);
+ if(!name||cost<0||price<=0||stock<0||
+ !document.getElementById("pcost").value||
+ !document.getElementById("pprice").value||
+ !document.getElementById("pstock").value){
+ alert("Vui lòng nhập đầy đủ thông tin hợp lệ.");
+ return;
+ }
+ data.products.push({id:Date.now(),name,cost,price,stock});
+ document.getElementById("pname").value="";
+ document.getElementById("pcost").value="";
+ document.getElementById("pprice").value="";
+ document.getElementById("pstock").value="";
+ save();
+ document.getElementById("message").textContent="Đã lưu sản phẩm thành công!";
+}
+function purchase(){
+ let id=Number(document.getElementById("buyProduct").value);
+ let qty=Number(document.getElementById("buyQty").value);
+ let cost=Number(document.getElementById("buyCost").value);
+ let p=data.products.find(x=>x.id===id);
+ if(!p||qty<=0||cost<0||!document.getElementById("buyCost").value){
+ alert("Vui lòng kiểm tra thông tin nhập hàng.");
+ return;
+ }
+ p.cost=(p.cost*p.stock+cost*qty)/(p.stock+qty);
+ p.stock+=qty;
+ save();
+ alert("Đã cập nhật nhập hàng!");
+}
+function sell(){
+ let id=Number(document.getElementById("sellProduct").value);
+ let qty=Number(document.getElementById("sellQty").value);
+ let price=Number(document.getElementById("sellPrice").value);
+ let p=data.products.find(x=>x.id===id);
+ if(!p||qty<=0||qty>p.stock||price<=0){
+ alert("Số lượng không hợp lệ hoặc tồn kho không đủ.");
+ return;
+ }
+ data.sales.push({
+ id:Date.now(),productId:p.id,name:p.name,qty,price,
+ cost:p.cost,date:new Date().toLocaleDateString("en-CA")
+ });
+ p.stock-=qty;
+ save();
+ alert("Đã ghi nhận bán hàng!");
+}
+function render(){
+ let today=new Date().toLocaleDateString("en-CA");
+ let sales=data.sales.filter(s=>s.date===today);
+ let revenue=sales.reduce((a,s)=>a+s.qty*s.price,0);
+ let profit=sales.reduce((a,s)=>a+s.qty*(s.price-s.cost),0);
+ document.getElementById("revenue").textContent=money(revenue);
+ document.getElementById("profit").textContent=money(profit);
+ document.getElementById("count").textContent=data.products.length;
+ document.getElementById("stockValue").textContent=money(
+ data.products.reduce((a,p)=>a+p.stock*p.cost,0));
+ document.getElementById("summary").innerHTML=
+ "Tổng số giao dịch hôm nay: "+sales.length+
+ "<br>Doanh thu hôm nay: "+money(revenue)+
+ "<br>Lợi nhuận gộp hôm nay: "+money(profit);
+ document.getElementById("alerts").innerHTML=
+ data.products.filter(p=>p.stock<=5).map(p=>
+ "⚠️ "+escapeHTML(p.name)+" còn "+p.stock+" sản phẩm"
+ ).join("<br>")||"Chưa có sản phẩm sắp hết hàng.";
+ document.getElementById("productList").innerHTML=
+ data.products.map(p=>`
+ <div class="item"><b>${escapeHTML(p.name)}</b>
+ <br><span class="muted">Giá nhập: ${money(p.cost)} · Giá bán: ${money(p.price)} · Tồn: ${p.stock}</span></div>
+ `).join("")||"Chưa có sản phẩm.";
+ let options=data.products.map(p=>
+ `<option value="${p.id}">${escapeHTML(p.name)} (Tồn: ${p.stock})</option>`
+ ).join("");
+ document.getElementById("buyProduct").innerHTML=options;
+ document.getElementById("sellProduct").innerHTML=options;
+}
+function escapeHTML(s){
+ return String(s).replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+function askAI(){
+ let q=document.getElementById("question").value.trim();
+ if(!q){alert("Vui lòng nhập câu hỏi.");return;}
+ let revenue=data.sales.reduce((a,s)=>a+s.qty*s.price,0);
+ let profit=data.sales.reduce((a,s)=>a+s.qty*(s.price-s.cost),0);
+ let low=data.products.filter(p=>p.stock<=5);
+ document.getElementById("answer").innerHTML=
+ "<b>Phân tích cửa hàng (bản thử nghiệm)</b><br>"+
+ "Tổng doanh thu đã ghi nhận: "+money(revenue)+"<br>"+
+ "Lợi nhuận gộp ước tính: "+money(profit)+"<br>"+
+ "Số mặt hàng: "+data.products.length+"<br>"+
+ "Sản phẩm tồn kho thấp: "+
+ (low.map(p=>escapeHTML(p.name)).join(", ")||"Chưa có")+
+ "<br><br><span class='muted'>Đây là phân tích tự động theo dữ liệu đã nhập, chưa phải AI kết nối mô hình ngôn ngữ. Cần kiểm tra số liệu trước khi quyết định nhập hàng.</span>";
+}
+document.getElementById("receipt").addEventListener("change",e=>{
+ document.getElementById("photoStatus").textContent=
+ e.target.files.length?"Đã chọn ảnh: "+e.target.files[0].name:"Chưa chọn ảnh";
+});
+render();
+</script>
+</body>
+</html>
