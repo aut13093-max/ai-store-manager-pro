@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="vi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -45,159 +45,159 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 
 <header>
 <h2>AI STORE MANAGER PRO 2.5</h2>
-<p>智能店铺管理系统（最终修复版）</p>
+<p>Hệ thống Quản lý Cửa hàng Thông minh</p>
 </header>
 
 <nav id="nav">
-<button class="active" onclick="switchPage('dashboard',this)">首页</button>
-<button onclick="switchPage('products',this)">产品库存</button>
-<button onclick="switchPage('transactions',this)">进销记录</button>
-<button onclick="switchPage('expenses',this)">费用</button>
-<button onclick="switchPage('reports',this)">报表导出</button>
-<button onclick="switchPage('ai',this)">AI分析</button>
-<button onclick="switchPage('backup',this)">数据备份</button>
+<button class="active" onclick="switchPage('dashboard',this)">Tổng quan</button>
+<button onclick="switchPage('products',this)">Sản phẩm</button>
+<button onclick="switchPage('transactions',this)">Giao dịch</button>
+<button onclick="switchPage('expenses',this)">Chi phí</button>
+<button onclick="switchPage('reports',this)">Báo cáo</button>
+<button onclick="switchPage('ai',this)">Phân tích AI</button>
+<button onclick="switchPage('backup',this)">Sao lưu</button>
 </nav>
 
 <main>
-<!-- 登录注册区块 -->
+<!-- Phần Đăng nhập / Đăng ký -->
 <section id="login" class="card">
-<h3>账号登录 / 注册</h3>
-<input id="loginEmail" type="email" placeholder="邮箱地址" autocomplete="email">
-<input id="loginPassword" type="password" placeholder="密码" autocomplete="current-password">
-<button class="action" onclick="handleAuth('login')">登录系统</button>
-<button class="action secondary" onclick="handleAuth('register')">注册新账号</button>
+<h3>Đăng nhập / Đăng ký tài khoản</h3>
+<input id="loginEmail" type="email" placeholder="Địa chỉ Email" autocomplete="email">
+<input id="loginPassword" type="password" placeholder="Mật khẩu" autocomplete="current-password">
+<button class="action" onclick="handleAuth('login')">Đăng nhập</button>
+<button class="action secondary" onclick="handleAuth('register')">Đăng ký tài khoản mới</button>
 <p id="authMsg"></p>
 </section>
 
-<!-- 主系统界面 -->
+<!-- Giao diện chính -->
 <div id="app" style="display:none">
 
-<!-- 1. 首页 -->
+<!-- 1. Tổng quan -->
 <section id="dashboard" class="page show">
 <div class="card">
-<h3>经营概览</h3>
+<h3>Tổng quan kinh doanh</h3>
 <div class="stat-grid">
-<div class="stat"><span>产品种类</span><b id="statProductCount">0</b></div>
-<div class="stat"><span>库存总量</span><b id="statStockTotal">0</b></div>
-<div class="stat"><span>销售收入</span><b id="statSalesTotal">0</b></div>
-<div class="stat"><span>费用总额</span><b id="statExpenseTotal">0</b></div>
-<div class="stat" style="grid-column: span 2; background:#ecfdf5;"><span>估算净利润</span><b id="statProfitTotal" style="color:#047857">0</b></div>
+<div class="stat"><span>Loại sản phẩm</span><b id="statProductCount">0</b></div>
+<div class="stat"><span>Tổng tồn kho</span><b id="statStockTotal">0</b></div>
+<div class="stat"><span>Doanh thu bán hàng</span><b id="statSalesTotal">0</b></div>
+<div class="stat"><span>Tổng chi phí</span><b id="statExpenseTotal">0</b></div>
+<div class="stat" style="grid-column: span 2; background:#ecfdf5;"><span>Lợi nhuận ròng ước tính</span><b id="statProfitTotal" style="color:#047857">0</b></div>
 </div>
-<button class="action" onclick="loadData()">刷新经营数据</button>
+<button class="action" onclick="loadData()">Làm mới dữ liệu</button>
 </div>
 <div class="card">
-<h3>库存不足提醒 (&le; 5)</h3>
-<div id="lowStockContainer">暂无库存告警</div>
+<h3>Cảnh báo hết hàng (&le; 5)</h3>
+<div id="lowStockContainer">Không có cảnh báo tồn kho</div>
 </div>
 </section>
 
-<!-- 2. 产品库存 -->
+<!-- 2. Sản phẩm & Tồn kho -->
 <section id="products" class="page">
 <div class="card">
-<h3>添加/编辑产品</h3>
+<h3>Thêm / Sửa sản phẩm</h3>
 <input type="hidden" id="editingProductId">
-<input id="pName" placeholder="产品名称">
-<input id="pCost" type="number" step="0.01" placeholder="成本价">
-<input id="pPrice" type="number" step="0.01" placeholder="销售价">
-<input id="pStock" type="number" placeholder="初始库存数量">
+<input id="pName" placeholder="Tên sản phẩm">
+<input id="pCost" type="number" step="0.01" placeholder="Giá gốc (Giá vốn)">
+<input id="pPrice" type="number" step="0.01" placeholder="Giá bán">
+<input id="pStock" type="number" placeholder="Số lượng tồn kho ban đầu">
 <div style="margin:6px 0;">
-<label class="small">产品图片（可选）：</label>
+<label class="small">Hình ảnh sản phẩm (Tùy chọn):</label>
 <input id="pImageFile" type="file" accept="image/*">
 </div>
-<button class="action" id="saveProductBtn" onclick="saveProduct()">保存产品</button>
-<button class="action secondary" id="cancelEditBtn" style="display:none" onclick="resetProductForm()">取消编辑</button>
+<button class="action" id="saveProductBtn" onclick="saveProduct()">Lưu sản phẩm</button>
+<button class="action secondary" id="cancelEditBtn" style="display:none" onclick="resetProductForm()">Hủy chỉnh sửa</button>
 </div>
 <div class="card">
-<h3>产品列表</h3>
+<h3>Danh sách sản phẩm</h3>
 <div class="table-container" id="productListContainer"></div>
 </div>
 </section>
 
-<!-- 3. 进销记录 -->
+<!-- 3. Giao dịch (Nhập/Xuất hàng) -->
 <section id="transactions" class="page">
 <div class="card">
-<h3>记录进货 / 销售</h3>
+<h3>Ghi nhận Nhập hàng / Bán hàng</h3>
 <select id="txProductSelect"></select>
 <select id="txTypeSelect">
-<option value="purchase">进货入库</option>
-<option value="sale">销售出库</option>
+<option value="purchase">Nhập kho (Mua hàng)</option>
+<option value="sale">Xuất kho (Bán hàng)</option>
 </select>
-<input id="txQty" type="number" placeholder="数量">
-<input id="txPrice" type="number" step="0.01" placeholder="成交单价">
-<button class="action" onclick="addTransaction()">保存交易记录</button>
+<input id="txQty" type="number" placeholder="Số lượng">
+<input id="txPrice" type="number" step="0.01" placeholder="Đơn giá giao dịch">
+<button class="action" onclick="addTransaction()">Lưu giao dịch</button>
 </div>
 <div class="card">
-<h3>历史交易记录</h3>
+<h3>Lịch sử giao dịch</h3>
 <div class="table-container" id="txListContainer"></div>
 </div>
 </section>
 
-<!-- 4. 费用管理 -->
+<!-- 4. Quản lý chi phí -->
 <section id="expenses" class="page">
 <div class="card">
-<h3>新增日常费用</h3>
+<h3>Thêm chi phí hàng ngày</h3>
 <select id="expenseCategory">
-<option>租金</option><option>工资</option><option>水电</option>
-<option>运输</option><option>营销</option><option>维修</option><option>其他</option>
+<option>Tiền thuê mặt bằng</option><option>Lương nhân viên</option><option>Điện nước</option>
+<option>Vận chuyển</option><option>Tiếp thị / Quảng cáo</option><option>Sửa chữa</option><option>Khác</option>
 </select>
-<input id="expenseDesc" placeholder="费用说明（如：11月店铺房租）">
-<input id="expenseAmount" type="number" step="0.01" placeholder="金额">
-<button class="action" onclick="addExpense()">保存费用记录</button>
+<input id="expenseDesc" placeholder="Mô tả chi phí (VD: Tiền thuê nhà tháng 11)">
+<input id="expenseAmount" type="number" step="0.01" placeholder="Số tiền">
+<button class="action" onclick="addExpense()">Lưu chi phí</button>
 </div>
 <div class="card">
-<h3>费用流水</h3>
+<h3>Dòng tiền chi phí</h3>
 <div class="table-container" id="expenseListContainer"></div>
 </div>
 </section>
 
-<!-- 5. 报表中心 -->
+<!-- 5. Báo cáo & Xuất Excel -->
 <section id="reports" class="page">
 <div class="card">
-<h3>数据导出</h3>
-<button class="action" onclick="exportExcel('products')">导出产品清单 Excel</button>
-<button class="action" onclick="exportExcel('transactions')">导出进销记录 Excel</button>
-<button class="action" onclick="exportExcel('expenses')">导出费用流水 Excel</button>
-<button class="action" onclick="exportExcel('all')">一键导出全部报表</button>
+<h3>Xuất dữ liệu</h3>
+<button class="action" onclick="exportExcel('products')">Xuất danh sách sản phẩm (Excel)</button>
+<button class="action" onclick="exportExcel('transactions')">Xuất lịch sử giao dịch (Excel)</button>
+<button class="action" onclick="exportExcel('expenses')">Xuất dòng tiền chi phí (Excel)</button>
+<button class="action" onclick="exportExcel('all')">Xuất toàn bộ báo cáo</button>
 </div>
 <div class="card">
-<h3>每日经营日报</h3>
+<h3>Báo cáo kinh doanh hàng ngày</h3>
 <div class="flex-row">
 <input type="date" id="reportDateInput" style="margin:0;">
-<button class="action" style="margin:0;width:auto;" onclick="generateDailyReport()">生成日报</button>
+<button class="action" style="margin:0;width:auto;" onclick="generateDailyReport()">Tạo báo cáo ngày</button>
 </div>
-<button class="action secondary" style="margin-top:10px;" onclick="window.print()">打印当前报告</button>
+<button class="action secondary" style="margin-top:10px;" onclick="window.print()">In báo cáo hiện tại</button>
 <div id="dailyReportResult" style="margin-top:12px;"></div>
 </div>
 </section>
 
-<!-- 6. AI 经营分析 -->
+<!-- 6. Phân tích AI -->
 <section id="ai" class="page">
 <div class="card">
-<h3>AI 本地经营分析助手</h3>
-<p class="small">基于当前店铺数据进行多维度规则评估与风险提示。</p>
-<button class="action" onclick="runAiAnalysis()">开始深度分析</button>
+<h3>Trợ lý phân tích kinh doanh AI</h3>
+<p class="small">Đánh giá quy tắc đa chiều và cảnh báo rủi ro dựa trên dữ liệu cửa hàng hiện tại.</p>
+<button class="action" onclick="runAiAnalysis()">Bắt đầu phân tích sâu</button>
 <div id="aiResultContainer" style="margin-top:12px;"></div>
 </div>
 </section>
 
-<!-- 7. 数据备份 -->
+<!-- 7. Sao lưu dữ liệu -->
 <section id="backup" class="page">
 <div class="card">
-<h3>数据完整备份</h3>
-<button class="action" onclick="backupJSON()">下载完整 JSON 备份文件</button>
-<p class="small">备份包含所有店铺档案、产品属性、交易及费用流水。图片资源以线上 URL 链接形式保存。</p>
+<h3>Sao lưu dữ liệu toàn diện</h3>
+<button class="action" onclick="backupJSON()">Tải xuống tệp sao lưu JSON</button>
+<p class="small">Bản sao lưu bao gồm hồ sơ cửa hàng, thuộc tính sản phẩm, giao dịch và chi phí. Hình ảnh được lưu dưới dạng liên kết URL trực tuyến.</p>
 </div>
 </section>
 
 <div style="padding: 10px 0; text-align: right;">
-<button class="action danger" style="width:auto;" onclick="logout()">退出当前账号</button>
+<button class="action danger" style="width:auto;" onclick="logout()">Đăng xuất tài khoản</button>
 </div>
 </div>
 </main>
 
 <script>
 const SUPABASE_URL = "https://owpfcmsrizmbyzimwlsk.supabase.co";
-const SUPABASE_KEY = "sb_publishable_a434FlGqYzGtKIsRd_aHfA_nEUb-C1f";
+const SUPABASE_KEY = "sb_publishable_a434FlqYzGtKIsRd_aHfA_nEUb-C1f";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentStore = null;
@@ -208,7 +208,7 @@ let expenses = [];
 
 const formatMoney = n => Number(n || 0).toLocaleString('en-US', {maximumFractionDigits: 2});
 
-// 身份认证
+// Xác thực tài khoản
 async function handleAuth(type) {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
@@ -216,7 +216,7 @@ async function handleAuth(type) {
   msgEl.innerText = '';
   
   if(!email || !password) {
-    msgEl.innerText = '请输入完整的邮箱和密码';
+    msgEl.innerText = 'Vui lòng nhập đầy đủ Email và mật khẩu';
     return;
   }
   
@@ -230,7 +230,7 @@ async function handleAuth(type) {
   }
   
   if(type === 'register' && !result.data.session) {
-    msgEl.innerText = '注册成功！请检查您的邮箱完成验证后登录。';
+    msgEl.innerText = 'Đăng ký thành công! Vui lòng kiểm tra hộp thư email để xác thực trước khi đăng nhập.';
     return;
   }
   
@@ -238,22 +238,22 @@ async function handleAuth(type) {
   await initStoreContext();
 }
 
-// 初始化店铺
+// Khởi tạo cửa hàng
 async function initStoreContext() {
   const {data, error} = await db.from('stores').select('*').eq('owner_id', currentUser.id).limit(1).maybeSingle();
   if(error) {
-    alert('读取店铺出错: ' + error.message);
+    alert('Lỗi đọc thông tin cửa hàng: ' + error.message);
     return;
   }
   
   if(data) {
     currentStore = data;
   } else {
-    const storeName = prompt('检测到您尚未创建店铺，请输入您的店铺名称：');
+    const storeName = prompt('Phát hiện bạn chưa có cửa hàng, vui lòng nhập tên cửa hàng của bạn:');
     if(!storeName) return;
     const r = await db.from('stores').insert({owner_id: currentUser.id, store_name: storeName}).select().single();
     if(r.error) {
-      alert('创建店铺失败: ' + r.error.message);
+      alert('Tạo cửa hàng thất bại: ' + r.error.message);
       return;
     }
     currentStore = r.data;
@@ -269,7 +269,7 @@ async function logout() {
   location.reload();
 }
 
-// 页面切换控制
+// Điều hướng trang
 function switchPage(id, btn) {
   document.querySelectorAll('.page').forEach(el => el.classList.remove('show'));
   document.getElementById(id).classList.add('show');
@@ -277,7 +277,7 @@ function switchPage(id, btn) {
   btn.classList.add('active');
 }
 
-// 加载核心数据
+// Tải dữ liệu cốt lõi
 async function loadData() {
   if(!currentStore) return;
   const sid = currentStore.id;
@@ -289,7 +289,7 @@ async function loadData() {
   ]);
   
   if(pRes.error || tRes.error || eRes.error) {
-    alert('数据同步失败，请检查网络');
+    alert('Đồng bộ dữ liệu thất bại, vui lòng kiểm tra kết nối mạng');
     return;
   }
   
@@ -300,7 +300,7 @@ async function loadData() {
   renderAll();
 }
 
-// 渲染视图
+// Hiển thị giao diện
 function renderAll() {
   document.getElementById('statProductCount').innerText = products.length;
   document.getElementById('statStockTotal').innerText = products.reduce((sum, p) => sum + Number(p.stock || 0), 0);
@@ -321,12 +321,12 @@ function renderAll() {
   
   const lowStock = products.filter(p => Number(p.stock) <= 5);
   document.getElementById('lowStockContainer').innerHTML = lowStock.length ? 
-    lowStock.map(p => `<p style="color:#dc2626;margin:4px 0;">⚠️ ${escapeHtml(p.name)} - 当前库存: <b>${p.stock}</b></p>`).join('') :
-    '<p style="color:#059669;margin:0;">✨ 所有产品库存充足</p>';
+    lowStock.map(p => `<p style="color:#dc2626;margin:4px 0;">⚠️ ${escapeHtml(p.name)} - Tồn kho hiện tại: <b>${p.stock}</b></p>`).join('') :
+    '<p style="color:#059669;margin:0;">✨ Tất cả sản phẩm đều đủ hàng</p>';
     
   document.getElementById('productListContainer').innerHTML = `
     <table>
-      <tr><th>图片</th><th>名称</th><th>成本</th><th>售价</th><th>库存</th><th>操作</th></tr>
+      <tr><th>Ảnh</th><th>Tên sản phẩm</th><th>Giá gốc</th><th>Giá bán</th><th>Tồn kho</th><th>Thao tác</th></tr>
       ${products.map(p => `
         <tr>
           <td><img src="${p.image_url || 'https://via.placeholder.com/40'}" class="thumb" alt="img"></td>
@@ -335,26 +335,26 @@ function renderAll() {
           <td>${formatMoney(p.selling_price)}</td>
           <td>${p.stock}</td>
           <td>
-            <button class="action secondary" style="padding:4px 8px;font-size:12px;margin:0 2px;" onclick="editProduct('${p.id}')">编辑</button>
-            <button class="action danger" style="padding:4px 8px;font-size:12px;margin:0 2px;" onclick="removeProduct('${p.id}')">删除</button>
+            <button class="action secondary" style="padding:4px 8px;font-size:12px;margin:0 2px;" onclick="editProduct('${p.id}')">Sửa</button>
+            <button class="action danger" style="padding:4px 8px;font-size:12px;margin:0 2px;" onclick="removeProduct('${p.id}')">Xóa</button>
           </td>
         </tr>
       `).join('')}
     </table>
   `;
   
-  document.getElementById('txProductSelect').innerHTML = products.map(p => `<option value="${p.id}">${escapeHtml(p.name)} (库存: ${p.stock})</option>`).join('');
+  document.getElementById('txProductSelect').innerHTML = products.map(p => `<option value="${p.id}">${escapeHtml(p.name)} (Tồn kho: ${p.stock})</option>`).join('');
   
   document.getElementById('txListContainer').innerHTML = `
     <table>
-      <tr><th>类型</th><th>产品名称</th><th>数量</th><th>单价</th><th>总金额</th><th>时间</th></tr>
+      <tr><th>Loại</th><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Tổng tiền</th><th>Thời gian</th></tr>
       ${transactions.map(t => {
         const p = products.find(x => x.id === t.product_id);
         const isSale = t.transaction_type === 'sale';
         return `
           <tr>
-            <td><span style="color:${isSale ? '#059669' : '#2563eb'};font-weight:bold;">${isSale ? '销售' : '进货'}</span></td>
-            <td>${escapeHtml(p?.name || '未知产品')}</td>
+            <td><span style="color:${isSale ? '#059669' : '#2563eb'};font-weight:bold;">${isSale ? 'Bán hàng' : 'Nhập hàng'}</span></td>
+            <td>${escapeHtml(p?.name || 'Sản phẩm không rõ')}</td>
             <td>${t.quantity}</td>
             <td>${formatMoney(t.unit_price)}</td>
             <td>${formatMoney(t.quantity * t.unit_price)}</td>
@@ -367,7 +367,7 @@ function renderAll() {
   
   document.getElementById('expenseListContainer').innerHTML = `
     <table>
-      <tr><th>日期</th><th>类别</th><th>说明</th><th>金额</th></tr>
+      <tr><th>Ngày</th><th>Danh mục</th><th>Mô tả</th><th>Số tiền</th></tr>
       ${expenses.map(e => `
         <tr>
           <td>${escapeHtml(e.expense_date)}</td>
@@ -393,7 +393,7 @@ async function saveProduct() {
   const fileInput = document.getElementById('pImageFile');
   
   if(!name || cost_price < 0 || selling_price < 0 || isNaN(stock)) {
-    alert('请正确填写产品名称、价格及库存信息');
+    alert('Vui lòng điền đúng tên sản phẩm, giá cả và số lượng tồn kho');
     return;
   }
   
@@ -403,7 +403,7 @@ async function saveProduct() {
     const filePath = `${currentStore.id}/${Date.now()}_${file.name}`;
     const uploadRes = await db.storage.from('product-images').upload(filePath, file);
     if(uploadRes.error) {
-      alert('图片上传失败: ' + uploadRes.error.message);
+      alert('Tải ảnh lên thất bại: ' + uploadRes.error.message);
       return;
     }
     const publicUrlRes = db.storage.from('product-images').getPublicUrl(filePath);
@@ -414,12 +414,12 @@ async function saveProduct() {
     const payload = {name, cost_price, selling_price, stock};
     if(image_url) payload.image_url = image_url;
     const r = await db.from('products').update(payload).eq('id', id).eq('store_id', currentStore.id);
-    if(r.error) return alert('更新失败: ' + r.error.message);
+    if(r.error) return alert('Cập nhật thất bại: ' + r.error.message);
   } else {
     const payload = {store_id: currentStore.id, name, cost_price, selling_price, stock};
     if(image_url) payload.image_url = image_url;
     const r = await db.from('products').insert(payload);
-    if(r.error) return alert('添加失败: ' + r.error.message);
+    if(r.error) return alert('Thêm sản phẩm thất bại: ' + r.error.message);
   }
   
   resetProductForm();
@@ -434,7 +434,7 @@ function editProduct(id) {
   document.getElementById('pCost').value = p.cost_price;
   document.getElementById('pPrice').value = p.selling_price;
   document.getElementById('pStock').value = p.stock;
-  document.getElementById('saveProductBtn').innerText = '确认修改';
+  document.getElementById('saveProductBtn').innerText = 'Xác nhận sửa';
   document.getElementById('cancelEditBtn').style.display = 'inline-block';
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
@@ -446,14 +446,14 @@ function resetProductForm() {
   document.getElementById('pPrice').value = '';
   document.getElementById('pStock').value = '';
   document.getElementById('pImageFile').value = '';
-  document.getElementById('saveProductBtn').innerText = '保存产品';
+  document.getElementById('saveProductBtn').innerText = 'Lưu sản phẩm';
   document.getElementById('cancelEditBtn').style.display = 'none';
 }
 
 async function removeProduct(id) {
-  if(!confirm('确定要删除该产品吗？')) return;
+  if(!confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) return;
   const r = await db.from('products').delete().eq('id', id).eq('store_id', currentStore.id);
-  if(r.error) return alert('删除失败: ' + r.error.message);
+  if(r.error) return alert('Xóa thất bại: ' + r.error.message);
   await loadData();
 }
 
@@ -464,7 +464,7 @@ async function addTransaction() {
   const unit_price = Number(document.getElementById('txPrice').value);
   
   if(!product_id || quantity <= 0 || unit_price < 0) {
-    alert('请正确填写交易数量与单价');
+    alert('Vui lòng điền đúng số lượng và đơn giá giao dịch');
     return;
   }
   
@@ -477,7 +477,7 @@ async function addTransaction() {
   });
   
   if(r.error) {
-    alert('记录交易失败: ' + r.error.message);
+    alert('Ghi nhận giao dịch thất bại: ' + r.error.message);
     return;
   }
   
@@ -492,7 +492,7 @@ async function addExpense() {
   const amount = Number(document.getElementById('expenseAmount').value);
   
   if(amount <= 0 || isNaN(amount)) {
-    alert('请输入有效的费用金额');
+    alert('Vui lòng nhập số tiền chi phí hợp lệ');
     return;
   }
   
@@ -505,7 +505,7 @@ async function addExpense() {
   });
   
   if(r.error) {
-    alert('保存费用失败: ' + r.error.message);
+    alert('Lưu chi phí thất bại: ' + r.error.message);
     return;
   }
   
@@ -519,11 +519,11 @@ function exportExcel(type) {
   const wb = XLSX.utils.book_new();
   
   if(type === 'all') {
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(products), '产品清单');
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(transactions), '进销流水');
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(expenses), '费用流水');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(products), 'Danh sách sản phẩm');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(transactions), 'Lịch sử giao dịch');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(expenses), 'Dòng tiền chi phí');
   } else {
-    const mapName = {products: '产品清单', transactions: '进销流水', expenses: '费用流水'};
+    const mapName = {products: 'Danh sách sản phẩm', transactions: 'Lịch sử giao dịch', expenses: 'Dòng tiền chi phí'};
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportData[type]), mapName[type]);
   }
   
@@ -549,12 +549,12 @@ function generateDailyReport() {
   
   document.getElementById('dailyReportResult').innerHTML = `
     <div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0;">
-      <h4>📅 ${dateStr} 经营日报</h4>
-      <p>销售收入：<b>${formatMoney(revenue)}</b></p>
-      <p>进货支出：<b>${formatMoney(purchaseAmount)}</b></p>
-      <p>日常费用：<b>${formatMoney(expenseAmount)}</b></p>
-      <p>估算毛利：<b>${formatMoney(revenue - cost)}</b></p>
-      <p>估算净利润：<b style="color:#047857">${formatMoney(revenue - cost - expenseAmount)}</b></p>
+      <h4>📅 Báo cáo ngày ${dateStr}</h4>
+      <p>Doanh thu bán hàng: <b>${formatMoney(revenue)}</b></p>
+      <p>Chi phí nhập hàng: <b>${formatMoney(purchaseAmount)}</b></p>
+      <p>Chi phí vận hành: <b>${formatMoney(expenseAmount)}</b></p>
+      <p>Lợi nhuận gộp ước tính: <b>${formatMoney(revenue - cost)}</b></p>
+      <p>Lợi nhuận ròng ước tính: <b style="color:#047857">${formatMoney(revenue - cost - expenseAmount)}</b></p>
     </div>
   `;
 }
@@ -564,19 +564,19 @@ function runAiAnalysis() {
   const lowStock = products.filter(p => Number(p.stock) <= 5);
   
   if(lowStock.length) {
-    suggestions.push(`库存预警：检测到有 ${lowStock.length} 种商品库存低于或等于 5 件（如：${lowStock.map(p=>p.name).join('、')}），建议及时补货。`);
+    suggestions.push(`Cảnh báo tồn kho: Phát hiện ${lowStock.length} sản phẩm có số lượng tồn kho từ 5 trở xuống (VD: ${lowStock.map(p=>p.name).join(', ')}), khuyên bạn nên nhập thêm hàng.`);
   }
   
   const soldProductIds = new Set(transactions.filter(t => t.transaction_type === 'sale').map(t => t.product_id));
   const deadStock = products.filter(p => !soldProductIds.has(p.id));
   if(deadStock.length) {
-    suggestions.push(`滞销分析：有 ${deadStock.length} 种产品目前暂无销售出库记录，可考虑通过促销或调整陈列提高动销率。`);
+    suggestions.push(`Phân tích hàng tồn đọng: Có ${deadStock.length} sản phẩm chưa có giao dịch bán hàng nào, bạn có thể cân nhắc khuyến mãi để tăng tốc độ tiêu thụ.`);
   }
   
   if(!transactions.length) {
-    suggestions.push('暂无任何交易流水，建议尽快录入第一笔销售或进货数据以激活高级分析功能。');
+    suggestions.push('Chưa có dữ liệu giao dịch nào, khuyên bạn nên nhập giao dịch bán hàng hoặc nhập hàng đầu tiên để kích hoạt tính năng phân tích nâng cao.');
   } else {
-    suggestions.push('经营状态平稳：建议持续关注畅销单品的毛利率与现金流周转效率。');
+    suggestions.push('Tình hình kinh doanh ổn định: Tiếp tục theo dõi suất sinh lợi và hiệu quả quay vòng dòng tiền của các mặt hàng bán chạy.');
   }
   
   document.getElementById('aiResultContainer').innerHTML = suggestions.map(s => `<p style="margin:6px 0;">• ${escapeHtml(s)}</p>`).join('');
@@ -600,7 +600,7 @@ function backupJSON() {
   URL.revokeObjectURL(url);
 }
 
-// 自动恢复会话
+// Tự động khôi phục phiên đăng nhập
 async function autoLogin() {
   const {data} = await db.auth.getSession();
   if(data.session) {
