@@ -25,7 +25,7 @@ button.action{background:#2563eb;color:white;border:0;padding:12px 18px;border-r
 @media(min-width:640px){button.action{width:auto}}
 button.danger{background:#dc2626}
 button.secondary{background:#475569}
-.table-container{width:100%;overflow-x:auto}
+.table-container{width:100% ;overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:500px}
 td,th{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left}
 th{background:#f8fafc;font-weight:600;color:#475569}
@@ -45,7 +45,7 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 
 <header>
 <h2>AI STORE MANAGER PRO 2.5</h2>
-<p>智能店铺管理系统（增强版）</p>
+<p>智能店铺管理系统（金鑰自適應修復版）</p>
 </header>
 
 <nav id="nav">
@@ -196,10 +196,19 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </main>
 
 <script>
-// Supabase 配置（已填入你的真实密钥）
+// Supabase 配置与绝对强兼容初始化
 const SUPABASE_URL = "https://owpfcmsrizmbyzimwlsk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_a434FlqYzGtKIsRd_aHfA_nEUb-C1f";
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true },
+  global: { 
+    headers: { 
+      'apikey': SUPABASE_KEY,
+      'authorization': `Bearer ${SUPABASE_KEY}`
+    } 
+  }
+});
 
 let currentStore = null;
 let currentUser = null;
