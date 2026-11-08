@@ -3,72 +3,78 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#123b32">
+<meta name="theme-color" content="#0c3b30">
 <title>AI STORE MANAGER PRO 2.4</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--green:#146b50;--dark:#123b32;--bg:#f3f6fa;--text:#182230;--muted:#667085}
+:root{--green:#0f6b4f;--green2:#1a8a68;--dark:#0c3b30;--bg:#eef3f0;--text:#17261f;--muted:#6b7a73;--line:#e3ebe6;--amber:#c77d0a;--red:#b42318}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Arial,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
-header{background:var(--dark);color:#fff;padding:14px 16px}
-header h2{margin:0 0 3px;font-size:18px}
-header p{margin:0;color:#c9e5d8;font-size:12px}
-main{max-width:900px;margin:auto;padding:10px}
-.panel,.card{background:#fff;border:1px solid #edf0f3;border-radius:12px;padding:12px;margin-bottom:10px}
-h3{margin:0 0 9px;font-size:16px}
-label{display:block;font-size:13px;color:var(--muted);margin-top:6px}
-input,select,button{width:100%;padding:10px 12px;margin:4px 0;border:1px solid #d6dde5;border-radius:9px;font:16px Arial,sans-serif;min-height:46px}
-button{background:var(--green);color:#fff;border:0;font-weight:700;cursor:pointer}
-button:disabled{opacity:.6;cursor:wait}
-button:active{filter:brightness(.92)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #1d9a73;outline-offset:1px}
-button.secondary{background:#e7f3ed;color:#126044}
-button.danger{background:#b42318;color:#fff}
-button.light{background:#eef2f6;color:#344054}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding-bottom:calc(70px + env(safe-area-inset-bottom))}
+header{background:linear-gradient(135deg,#0c3b30,#127a5a);color:#fff;padding:16px 16px 18px;border-radius:0 0 18px 18px}
+header h2{margin:0 0 2px;font-size:17px;font-weight:700;letter-spacing:.2px}
+header p{margin:0;color:#bfe3d3;font-size:11.5px}
+main{max-width:900px;margin:auto;padding:12px 10px}
+.panel,.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:11px;box-shadow:0 1px 2px rgba(15,60,45,.05),0 4px 14px rgba(15,60,45,.04)}
+h3{margin:0 0 10px;font-size:15px;font-weight:700}
+label{display:block;font-size:12px;color:var(--muted);margin-top:6px;font-weight:600}
+input,select,button{width:100%;padding:9px 12px;margin:4px 0;border:1px solid #d5dfd9;border-radius:10px;font:14.5px system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;min-height:44px}
+input,select{background:#fbfdfc;color:var(--text)}
+input:focus,select:focus{outline:none;border-color:var(--green2);box-shadow:0 0 0 3px rgba(26,138,104,.15)}
+button{background:var(--green);color:#fff;border:0;font-weight:600;cursor:pointer;letter-spacing:.1px}
+button:disabled{opacity:.55;cursor:wait}
+button:active{transform:scale(.985);filter:brightness(.93)}
+button:focus-visible{outline:2px solid var(--green2);outline-offset:2px}
+button.secondary{background:#e5f2ec;color:#0f5a42}
+button.danger{background:#fdecea;color:var(--red)}
+button.light{background:#eef2f0;color:#3a4a43}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
-.card{margin:0}
-.card small{color:var(--muted);font-size:12px}
-.card strong{display:block;font-size:17px;margin-top:5px;overflow-wrap:anywhere}
-.nav{display:flex;gap:6px;overflow:auto;margin:0 -10px 10px;padding:8px 10px;position:sticky;top:0;z-index:5;background:var(--bg);scrollbar-width:none}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:11px}
+.card{margin:0;padding:11px 12px;border-left:4px solid var(--green2)}
+.card:nth-child(2){border-left-color:#2f9e6f}
+.card:nth-child(3){border-left-color:var(--amber)}
+.card:nth-child(4){border-left-color:#4b6a8a}
+.card small{color:var(--muted);font-size:11.5px;display:block;line-height:1.3}
+.card strong{display:block;font-size:16px;margin-top:5px;overflow-wrap:anywhere;font-weight:700}
+.nav{display:flex;gap:7px;overflow:auto;margin:0 -10px 11px;padding:8px 10px;position:sticky;top:0;z-index:5;background:rgba(238,243,240,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);scrollbar-width:none}
 .nav::-webkit-scrollbar{display:none}
-.nav button{min-width:86px;width:auto;white-space:nowrap;margin:0;padding:10px 14px;font-size:14px;background:#e7f3ed;color:#126044}
-.nav button.on,.filter button.on{background:var(--green);color:#fff}
+.nav button{min-width:0;width:auto;white-space:nowrap;margin:0;padding:8px 15px;min-height:38px;font-size:13px;border-radius:999px;background:#fff;color:#2d4a3f;border:1px solid var(--line);font-weight:600}
+.nav button.on,.filter button.on{background:var(--green);color:#fff;border-color:var(--green)}
 .hidden{display:none!important}
-.item{padding:10px 0;border-bottom:1px solid #edf0f2}
-.muted{color:var(--muted);font-size:13px}
-.actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.actions button{width:auto;min-height:40px;padding:8px 16px;font-size:14px;margin:0}
-#status{font-size:14px;white-space:pre-wrap;margin:8px 2px;color:#087443}
-#status.err{color:#b42318}
-footer{text-align:center;color:#89939e;font-size:12px;padding:14px}
-.statline{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #f0f2f5}
-.statline span:first-child{color:#667085}
-.filter{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
-.modal{position:fixed;inset:0;background:#10182888;display:flex;align-items:center;justify-content:center;padding:14px;z-index:20}
-.modalbox{background:#fff;border-radius:14px;padding:14px;width:min(100%,440px);max-height:92vh;overflow:auto}
-.good{color:#087443!important}.bad{color:#b42318!important}
-.big{background:#f7faf9;border-radius:10px;padding:12px;margin-top:10px}
-.big strong{font-size:22px;display:block;margin-top:4px}
-/* Ảnh sản phẩm */
-.photo-box{border:1px dashed #b9c4cf;border-radius:12px;padding:10px;margin:8px 0;background:#fafcfb}
-.photo-preview{display:block;width:100%;max-height:240px;object-fit:contain;border-radius:10px;background:#eef2f6;margin-bottom:8px}
-.photo-empty{display:flex;align-items:center;justify-content:center;height:90px;border-radius:10px;background:#eef2f6;color:var(--muted);font-size:13px;margin-bottom:8px;text-align:center;padding:6px}
+.item{padding:11px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.muted{color:var(--muted);font-size:12px}
+.actions{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
+.actions button{width:auto;min-height:36px;padding:6px 16px;font-size:13px;margin:0;border-radius:9px}
+#status{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:30;max-width:520px;margin:0 auto;padding:11px 14px;border-radius:12px;background:#0c3b30;color:#e7fff5;font-size:13px;white-space:pre-wrap;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#status.err{background:#7a1a12;color:#ffeceb}
+#status:empty{display:none}
+footer{text-align:center;color:#8a9a92;font-size:11px;padding:14px}
+.statline{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #eff4f1;font-size:13.5px}
+.statline:last-child{border-bottom:0}
+.statline span:first-child{color:var(--muted)}
+.filter{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.filter button{min-height:38px;font-size:13px;margin:0;border-radius:999px;background:#e5f2ec;color:#0f5a42}
+.modal{position:fixed;inset:0;background:rgba(10,30,24,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:14px;z-index:20}
+.modalbox{background:#fff;border-radius:18px;padding:16px;width:min(100%,440px);max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.good{color:#0b7a4b!important}.bad{color:var(--red)!important}
+.big{background:#f4f9f6;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+.big strong{font-size:21px;display:block;margin-top:3px}
+.photo-box{border:1.5px dashed #b8cbc1;border-radius:14px;padding:11px;margin:9px 0;background:#f8fbf9}
+.photo-preview{display:block;width:100%;max-height:240px;object-fit:contain;border-radius:12px;background:#eaf0ed;margin-bottom:9px}
+.photo-empty{display:flex;align-items:center;justify-content:center;height:84px;border-radius:12px;background:#eaf0ed;color:var(--muted);font-size:12.5px;margin-bottom:9px;text-align:center;padding:6px}
 .photo-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.photo-actions button{margin:0;font-size:14px}
+.photo-actions button{margin:0;font-size:13px}
 .pitem{display:flex;gap:12px;align-items:flex-start}
 .pbody{flex:1;min-width:0}
-.product-photo{width:72px;height:72px;flex:none;object-fit:cover;border-radius:10px;background:#eef2f6;cursor:zoom-in}
-.product-photo.ph{display:flex;align-items:center;justify-content:center;font-size:28px;cursor:default}
-.viewer img{display:block;width:100%;max-height:70vh;object-fit:contain;border-radius:10px}
+.pbody b{font-size:14.5px}
+.product-photo{width:68px;height:68px;flex:none;object-fit:cover;border-radius:12px;background:#eaf0ed;cursor:zoom-in;border:1px solid var(--line)}
+.product-photo.ph{display:flex;align-items:center;justify-content:center;font-size:26px;cursor:default}
+.viewer img{display:block;width:100%;max-height:70vh;object-fit:contain;border-radius:12px}
 @media(min-width:650px){.cards{grid-template-columns:repeat(4,minmax(0,1fr))}.filter{grid-template-columns:repeat(5,minmax(0,1fr))}}
 </style>
 </head>
 <body>
-<header>
-<h2>🏪 AI STORE MANAGER PRO</h2>
-<p>Trợ lý quản lý cửa hàng thông minh · Cloud 2.4</p>
-</header>
+<header><h2>🏪 AI STORE MANAGER PRO</h2><p>Trợ lý quản lý cửa hàng thông minh · Cloud 2.4</p></header>
 <main>
 
 <section id="auth" class="panel">
@@ -81,10 +87,7 @@ footer{text-align:center;color:#89939e;font-size:12px;padding:14px}
 </section>
 
 <section id="app" class="hidden">
-<div class="panel">
-<div id="accountInfo" class="muted"></div>
-<button class="danger" onclick="signOut()">Đăng xuất</button>
-</div>
+<div class="panel"><div id="accountInfo" class="muted"></div><button class="danger" onclick="signOut()">Đăng xuất</button></div>
 
 <section id="storeSetup" class="panel hidden">
 <h3>🏪 Tạo cửa hàng</h3>
@@ -93,10 +96,7 @@ footer{text-align:center;color:#89939e;font-size:12px;padding:14px}
 </section>
 
 <div id="storeArea" class="hidden">
-<div class="panel">
-<b id="storeTitle">Cửa hàng</b>
-<p class="muted">Dữ liệu được lưu trực tuyến trên Supabase.</p>
-</div>
+<div class="panel"><b id="storeTitle">Cửa hàng</b><p class="muted" style="margin:3px 0 0">Dữ liệu được lưu trực tuyến trên Supabase.</p></div>
 
 <div class="cards">
 <div class="card"><small>Doanh thu hôm nay</small><strong id="revenue">0 ₫</strong></div>
@@ -118,32 +118,20 @@ footer{text-align:center;color:#89939e;font-size:12px;padding:14px}
 <div class="panel">
 <h3>📊 Thống kê kinh doanh</h3>
 <div class="filter" id="periodBtns">
-<button class="secondary" data-p="today" onclick="setPeriod('today')">Hôm nay</button>
-<button class="secondary" data-p="yesterday" onclick="setPeriod('yesterday')">Hôm qua</button>
-<button class="secondary" data-p="month" onclick="setPeriod('month')">Tháng này</button>
-<button class="secondary" data-p="year" onclick="setPeriod('year')">Năm nay</button>
-<button class="secondary" data-p="all" onclick="setPeriod('all')">Tất cả</button>
+<button data-p="today" onclick="setPeriod('today')">Hôm nay</button>
+<button data-p="yesterday" onclick="setPeriod('yesterday')">Hôm qua</button>
+<button data-p="month" onclick="setPeriod('month')">Tháng này</button>
+<button data-p="year" onclick="setPeriod('year')">Năm nay</button>
+<button data-p="all" onclick="setPeriod('all')">Tất cả</button>
 </div>
 <p class="muted" id="periodLabel">Đang xem: Hôm nay</p>
 <div id="summary"></div>
 <p class="muted">Lợi nhuận gộp được ước tính theo giá nhập hiện tại của sản phẩm. Lợi nhuận ròng = lợi nhuận gộp − chi phí đã ghi nhận.</p>
 </div>
-<div class="panel">
-<h3>🏆 Sản phẩm bán chạy (theo kỳ đang xem)</h3>
-<div id="topProducts"></div>
-</div>
-<div class="panel">
-<h3>📦 Tổng quan tồn kho</h3>
-<div id="inventorySummary"></div>
-</div>
-<div class="panel">
-<h3>⚠️ Cảnh báo tồn kho</h3>
-<div id="alerts">Chưa có dữ liệu</div>
-</div>
-<div class="panel">
-<h3>📜 Giao dịch gần đây</h3>
-<div id="history"></div>
-</div>
+<div class="panel"><h3>🏆 Sản phẩm bán chạy (theo kỳ đang xem)</h3><div id="topProducts"></div></div>
+<div class="panel"><h3>📦 Tổng quan tồn kho</h3><div id="inventorySummary"></div></div>
+<div class="panel"><h3>⚠️ Cảnh báo tồn kho</h3><div id="alerts">Chưa có dữ liệu</div></div>
+<div class="panel"><h3>📜 Giao dịch gần đây</h3><div id="history"></div></div>
 </section>
 
 <section id="products" class="hidden">
@@ -155,7 +143,6 @@ footer{text-align:center;color:#89939e;font-size:12px;padding:14px}
 <input id="pprice" type="number" min="0" inputmode="decimal" placeholder="Giá bán (₫)">
 </div>
 <input id="pstock" type="number" min="0" inputmode="numeric" placeholder="Số lượng ban đầu">
-
 <div class="photo-box">
 <label style="margin-top:0">📷 Ảnh sản phẩm (không bắt buộc)</label>
 <div id="newPhotoArea"><div class="photo-empty">Chưa chọn ảnh</div></div>
@@ -168,7 +155,6 @@ footer{text-align:center;color:#89939e;font-size:12px;padding:14px}
 <input id="galNew" type="file" accept="image/*" class="hidden" onchange="onPickNew(this)">
 <p class="muted">Ảnh được tự động thu nhỏ trước khi tải lên. Nếu ảnh lỗi, thông tin sản phẩm vẫn được lưu.</p>
 </div>
-
 <button onclick="addProduct(this)">Lưu sản phẩm</button>
 </div>
 <div class="panel">
@@ -233,28 +219,27 @@ footer{text-align:center;color:#89939e;font-size:12px;padding:14px}
 </div>
 </section>
 
-<p id="status" role="status"></p>
 <footer>AI STORE MANAGER PRO · Cloud Version 2.4</footer>
 </main>
+<p id="status" role="status"></p>
 <div id="modalRoot"></div>
 
 <script>
 const SUPABASE_URL="https://owpfcmsrizmbyzimwlsk.supabase.co";
 const SUPABASE_KEY="sb_publishable_a434FlGqYzGtKIsRd_aHfA_nEUb-C1f";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const BUCKET="product-images";
-const LOW_STOCK=5;
-/* Giá trị lưu trong DB giữ nguyên để tương thích dữ liệu cũ; chỉ đổi phần hiển thị */
+const BUCKET="product-images",LOW_STOCK=5;
 const CATS={"租金":"Tiền thuê mặt bằng","工资":"Lương nhân viên","水电":"Điện nước","运输":"Vận chuyển","营销":"Marketing","维修":"Sửa chữa","其他":"Khác"};
 const catName=c=>CATS[c]||c;
 const PERIODS={today:"Hôm nay",yesterday:"Hôm qua",month:"Tháng này",year:"Năm nay",all:"Tất cả"};
-
-let user=null,store=null,products=[],transactions=[],expenses=[],period="today",tab="home";
-let newImg=null;   // {blob,url} ảnh đang chọn khi thêm sản phẩm
-let editImg=null;  // {blob,url,clear,orig} ảnh khi sửa sản phẩm
+let user=null,store=null,products=[],transactions=[],expenses=[],period="today",tab="home",newImg=null,editImg=null,msgTimer=null;
 
 const $=id=>document.getElementById(id);
-function msg(t,err){const s=$("status");s.textContent=t;s.className=err?"err":""}
+function msg(t,err){
+ const s=$("status");s.textContent=t||"";s.className=err?"err":"";
+ clearTimeout(msgTimer);
+ if(t)msgTimer=setTimeout(()=>{s.textContent=""},err?9000:4500);
+}
 function money(n){return Number(n||0).toLocaleString("vi-VN")+" ₫"}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function val(id){return $(id).value.trim()}
@@ -265,13 +250,7 @@ function pname(id){return products.find(p=>p.id===id)?.name||"Sản phẩm đã 
 function pcostOf(id){return Number(products.find(p=>p.id===id)?.cost_price||0)}
 function fmtErr(e){return e&&e.message?e.message:String(e)}
 function safeUrl(u){return typeof u==="string"&&/^https:\/\//.test(u)?u:""}
-
-/* Chạy thao tác có khóa nút để tránh bấm đúp */
-async function guard(btn,fn){
- if(btn)btn.disabled=true;
- try{await fn()}catch(e){msg("Lỗi: "+fmtErr(e),true)}
- finally{if(btn)btn.disabled=false}
-}
+async function guard(btn,fn){if(btn)btn.disabled=true;try{await fn()}catch(e){msg("Lỗi: "+fmtErr(e),true)}finally{if(btn)btn.disabled=false}}
 
 function show(id){
  tab=id;
@@ -280,7 +259,6 @@ function show(id){
  if(id==="analytics")renderAnalytics();
  window.scrollTo({top:0});
 }
-
 function inPeriod(date){
  const d=new Date(date),now=new Date(),key=dateKey(d);
  if(period==="all")return true;
@@ -299,9 +277,9 @@ function compressImage(file){
   if(file.size>20*1024*1024){reject(new Error("Ảnh quá lớn (tối đa 20MB)."));return}
   const url=URL.createObjectURL(file),img=new Image();
   img.onload=()=>{
-   const MAX=1024;let w=img.naturalWidth,h=img.naturalHeight;
+   let w=img.naturalWidth,h=img.naturalHeight;
    if(!w||!h){URL.revokeObjectURL(url);reject(new Error("Không đọc được kích thước ảnh."));return}
-   const k=Math.min(1,MAX/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);
+   const k=Math.min(1,1024/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);
    const c=document.createElement("canvas");c.width=w;c.height=h;
    const ctx=c.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
    URL.revokeObjectURL(url);
@@ -315,15 +293,12 @@ function compressImage(file){
   img.src=url;
  });
 }
-function pathFromUrl(url){
- const part=String(url||"").split("/"+BUCKET+"/")[1];
- return part?decodeURIComponent(part.split("?")[0]):null;
-}
+function pathFromUrl(url){const p=String(url||"").split("/"+BUCKET+"/")[1];return p?decodeURIComponent(p.split("?")[0]):null}
 function imgErr(e){
  const m=fmtErr(e);
  if(/bucket not found/i.test(m))return "Chưa tạo bucket \"product-images\" trong Supabase Storage.";
  if(/row-level security|not authorized|permission|policy/i.test(m))return "Chưa có quyền tải ảnh lên (kiểm tra policy của Storage).";
- if(/image_url/i.test(m))return "Bảng products chưa có cột image_url. Hãy chạy đoạn SQL nâng cấp 2.4 trong Supabase.";
+ if(/image_url/i.test(m))return "Bảng products chưa có cột image_url. Hãy chạy SQL nâng cấp 2.4 trong Supabase.";
  if(/failed to fetch|network/i.test(m))return "Mất kết nối mạng khi tải ảnh. Hãy thử lại.";
  return m;
 }
@@ -333,12 +308,7 @@ async function uploadImage(productId,blob){
  if(error)throw error;
  return db.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 }
-async function removeImageFile(url){
- const path=pathFromUrl(url);
- if(!path)return;
- try{await db.storage.from(BUCKET).remove([path])}catch(e){}
-}
-/* Lưu ảnh cho sản phẩm: lỗi ảnh KHÔNG làm mất thông tin sản phẩm. Trả về chuỗi lỗi hoặc "" */
+async function removeImageFile(url){const p=pathFromUrl(url);if(!p)return;try{await db.storage.from(BUCKET).remove([p])}catch(e){}}
 async function attachImage(productId,blob){
  let url="";
  try{
@@ -348,9 +318,7 @@ async function attachImage(productId,blob){
   return "";
  }catch(e){return imgErr(e)}
 }
-function photoHTML(url,empty){
- return url?`<img class="photo-preview" src="${esc(url)}" alt="Ảnh sản phẩm">`:`<div class="photo-empty">${empty}</div>`;
-}
+function photoHTML(url,empty){return url?`<img class="photo-preview" src="${esc(url)}" alt="Ảnh sản phẩm">`:`<div class="photo-empty">${empty}</div>`}
 async function onPickNew(input){
  const f=input.files&&input.files[0];input.value="";
  if(!f)return;
@@ -385,15 +353,11 @@ function clearEditPhoto(){
  editImg.blob=null;editImg.url="";editImg.clear=true;
  refreshEditPhoto()
 }
-function refreshEditPhoto(){
- $("editPhotoArea").innerHTML=photoHTML(editImg.url,editImg.clear?"Ảnh sẽ bị xóa khi bạn bấm Lưu":"Sản phẩm chưa có ảnh");
-}
+function refreshEditPhoto(){$("editPhotoArea").innerHTML=photoHTML(editImg.url,editImg.clear?"Ảnh sẽ bị xóa khi bạn bấm Lưu":"Sản phẩm chưa có ảnh")}
 function viewImage(id){
  const p=products.find(x=>x.id===id),u=safeUrl(p?.image_url);
  if(!u)return;
- $("modalRoot").innerHTML=`<div class="modal" onclick="closeModal()"><div class="modalbox viewer" onclick="event.stopPropagation()">
- <h3>${esc(p.name)}</h3><img src="${esc(u)}" alt="${esc(p.name)}">
- <button class="light" onclick="closeModal()">Đóng</button></div></div>`;
+ $("modalRoot").innerHTML=`<div class="modal" onclick="closeModal()"><div class="modalbox viewer" onclick="event.stopPropagation()"><h3>${esc(p.name)}</h3><img src="${esc(u)}" alt="${esc(p.name)}"><button class="light" onclick="closeModal()">Đóng</button></div></div>`;
 }
 
 /* ===== ĐĂNG NHẬP ===== */
@@ -410,8 +374,7 @@ async function signUp(btn){await guard(btn,async()=>{
  if(!email||password.length<6){msg("Vui lòng nhập email và mật khẩu ít nhất 6 ký tự.",true);return}
  const {data,error}=await db.auth.signUp({email,password});
  if(error){msg(authErr(error),true);return}
- if(data.session){user=data.user;await openApp()}
- else msg("Đăng ký thành công. Hãy xác nhận email rồi đăng nhập.")
+ if(data.session){user=data.user;await openApp()}else msg("Đăng ký thành công. Hãy xác nhận email rồi đăng nhập.")
 })}
 async function signIn(btn){await guard(btn,async()=>{
  const email=val("email"),password=$("password").value;
@@ -424,8 +387,7 @@ async function signOut(){
  await db.auth.signOut();
  user=null;store=null;products=[];transactions=[];expenses=[];
  $("app").classList.add("hidden");$("auth").classList.remove("hidden");
- $("password").value="";
- msg("Đã đăng xuất.")
+ $("password").value="";msg("Đã đăng xuất.")
 }
 ["email","password"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter")signIn()}));
 
@@ -435,8 +397,7 @@ async function openApp(){
  const {data,error}=await db.from("stores").select("*").order("created_at",{ascending:true}).limit(1);
  if(error){msg("Lỗi tải cửa hàng: "+error.message,true);return}
  if(!data||!data.length){$("storeSetup").classList.remove("hidden");$("storeArea").classList.add("hidden");return}
- store=data[0];
- await loadData()
+ store=data[0];await loadData()
 }
 async function createStore(btn){await guard(btn,async()=>{
  const name=val("storeName");
@@ -445,7 +406,6 @@ async function createStore(btn){await guard(btn,async()=>{
  if(error){msg("Không tạo được cửa hàng: "+error.message,true);return}
  store=data;await loadData()
 })}
-
 async function loadData(){
  if(!store)return;
  $("storeSetup").classList.add("hidden");$("storeArea").classList.remove("hidden");
@@ -459,23 +419,18 @@ async function loadData(){
   msg("Lỗi tải dữ liệu: "+(pr.error?.message||tr.error?.message||ex.error?.message)+(ex.error&&!pr.error&&!tr.error?". Chỉ phần Chi phí bị ảnh hưởng, hãy kiểm tra bảng/RLS của expenses.":""),true);
   if(pr.error||tr.error)return;
  }
- products=pr.data||[];transactions=tr.data||[];expenses=ex.data||[];
- render()
+ products=pr.data||[];transactions=tr.data||[];expenses=ex.data||[];render()
 }
 
 /* ===== SẢN PHẨM ===== */
 async function addProduct(btn){await guard(btn,async()=>{
  const name=val("pname"),cost=Number(val("pcost")),price=Number(val("pprice")),stock=Number(val("pstock"));
- if(!name||val("pcost")===""||val("pprice")===""||val("pstock")===""||cost<0||price<=0||stock<0||!Number.isFinite(stock)){
-  msg("Vui lòng nhập thông tin sản phẩm hợp lệ.",true);return}
+ if(!name||val("pcost")===""||val("pprice")===""||val("pstock")===""||cost<0||price<=0||stock<0||!Number.isFinite(stock)){msg("Vui lòng nhập thông tin sản phẩm hợp lệ.",true);return}
  if(price<cost&&!confirm("Giá bán thấp hơn giá nhập (bán lỗ). Vẫn lưu sản phẩm?"))return;
- /* Bước 1: lưu sản phẩm đúng như phiên bản 2.1 (không đụng tới cột ảnh) */
  const {data,error}=await db.from("products").insert({store_id:store.id,name,cost_price:cost,selling_price:price,stock:0}).select().single();
  if(error){msg("Lỗi lưu sản phẩm: "+error.message,true);return}
- /* Bước 2: tải ảnh (nếu có), lỗi ảnh không ảnh hưởng sản phẩm */
  let imgProblem="";
  if(newImg)imgProblem=await attachImage(data.id,newImg.blob);
- /* Bước 3: nhập tồn kho ban đầu */
  let stockProblem="";
  if(stock>0){
   const {error:e}=await db.rpc("record_inventory_transaction",{p_store_id:store.id,p_product_id:data.id,p_type:"purchase",p_quantity:stock,p_unit_price:cost});
@@ -487,7 +442,6 @@ async function addProduct(btn){await guard(btn,async()=>{
  msg(notes.length?notes.join("\n"):"Đã lưu sản phẩm.",notes.length>0);
  await loadData()
 })}
-
 function closeModal(){
  if(editImg&&editImg.blob)URL.revokeObjectURL(editImg.url);
  editImg=null;$("modalRoot").innerHTML="";
@@ -524,8 +478,7 @@ async function saveProduct(id,btn){await guard(btn,async()=>{
  if(!name||cost<0||price<=0){msg("Vui lòng nhập tên và giá hợp lệ.",true);return}
  const {error}=await db.from("products").update({name,cost_price:cost,selling_price:price}).eq("id",id).eq("store_id",store.id);
  if(error){msg("Không sửa được sản phẩm: "+error.message,true);return}
- let problem="";
- const img=editImg;
+ let problem="";const img=editImg;
  if(img&&img.blob){
   problem=await attachImage(id,img.blob);
   if(!problem&&img.orig)await removeImageFile(img.orig);
@@ -570,7 +523,6 @@ async function doTransaction(type,btn){await guard(btn,async()=>{
  msg(buy?"Đã nhập hàng thành công.":"Đã ghi nhận bán hàng thành công.");
  await loadData();fillPrice(buy?"buy":"sell")
 })}
-
 function openTransactionEdit(id){
  const t=transactions.find(x=>x.id===id);if(!t)return;
  $("modalRoot").innerHTML=`<div class="modal"><div class="modalbox">
@@ -597,7 +549,6 @@ async function deleteTransaction(id){
 
 /* ===== CHI PHÍ ===== */
 function catOptions(sel){return Object.keys(CATS).map(c=>`<option value="${c}" ${c===sel?"selected":""}>${CATS[c]}</option>`).join("")}
-
 async function addExpense(btn){await guard(btn,async()=>{
  const date=val("expenseDate"),category=val("expenseCategory"),description=val("expenseDescription"),amount=Number(val("expenseAmount"));
  if(!date||!category||!(amount>0)){msg("Vui lòng nhập ngày, loại chi phí và số tiền hợp lệ.",true);return}
@@ -632,7 +583,7 @@ async function deleteExpense(id){
  msg("Đã xóa chi phí.");await loadData()
 }
 
-/* ===== PHÂN TÍCH LÃI LỖ (giờ địa phương, không lệch ngày) ===== */
+/* ===== PHÂN TÍCH LÃI LỖ ===== */
 function calc(start,end){
  const sales=transactions.filter(t=>{const d=dateKey(t.created_at);return t.transaction_type==="sale"&&d>=start&&d<=end});
  const revenue=sales.reduce((s,t)=>s+Number(t.quantity)*Number(t.unit_price),0);
@@ -662,16 +613,13 @@ function render(){
  const todaySales=transactions.filter(t=>t.transaction_type==="sale"&&dateKey(t.created_at)===today);
  const todayRevenue=todaySales.reduce((a,t)=>a+Number(t.quantity)*Number(t.unit_price),0);
  const todayProfit=todaySales.reduce((a,t)=>a+Number(t.quantity)*(Number(t.unit_price)-pcostOf(t.product_id)),0);
-
  const stockQty=products.reduce((a,p)=>a+Number(p.stock),0);
  const stockCost=products.reduce((a,p)=>a+Number(p.stock)*Number(p.cost_price),0);
  const stockSell=products.reduce((a,p)=>a+Number(p.stock)*Number(p.selling_price),0);
-
  const filtered=transactions.filter(t=>inPeriod(t.created_at));
  const sales=filtered.filter(t=>t.transaction_type==="sale");
  const buys=filtered.filter(t=>t.transaction_type==="purchase");
  const fExp=expenses.filter(e=>inPeriod(e.expense_date+"T12:00:00"));
-
  const revenue=sales.reduce((a,t)=>a+Number(t.quantity)*Number(t.unit_price),0);
  const purchaseTotal=buys.reduce((a,t)=>a+Number(t.quantity)*Number(t.unit_price),0);
  const gross=sales.reduce((a,t)=>a+Number(t.quantity)*(Number(t.unit_price)-pcostOf(t.product_id)),0);
@@ -688,15 +636,11 @@ function render(){
  $("stockValue").textContent=money(stockCost);
 
  $("summary").innerHTML=
-  line("Doanh thu bán hàng",money(revenue))+
-  line("Tiền nhập hàng (tham khảo)",money(purchaseTotal))+
-  line("Lợi nhuận gộp ước tính",money(gross))+
-  line("Chi phí vận hành",money(expTotal))+
+  line("Doanh thu bán hàng",money(revenue))+line("Tiền nhập hàng (tham khảo)",money(purchaseTotal))+
+  line("Lợi nhuận gộp ước tính",money(gross))+line("Chi phí vận hành",money(expTotal))+
   `<div class="statline"><span><b>Lợi nhuận ròng</b></span><b class="${net>=0?"good":"bad"}">${net>=0?"Lãi: ":"Lỗ: "}${money(Math.abs(net))}</b></div>`+
-  line("Số giao dịch bán",sales.length)+
-  line("Số lượng hàng đã bán",qtySold)+
-  line("Số giao dịch nhập",buys.length)+
-  line("Số lượng hàng đã nhập",qtyBought);
+  line("Số giao dịch bán",sales.length)+line("Số lượng hàng đã bán",qtySold)+
+  line("Số giao dịch nhập",buys.length)+line("Số lượng hàng đã nhập",qtyBought);
 
  const agg={};
  sales.forEach(t=>{const a=agg[t.product_id]||(agg[t.product_id]={q:0,r:0,g:0});
