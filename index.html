@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>AI STORE MANAGER PRO 2.5</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box}
@@ -44,7 +45,7 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 
 <header>
 <h2>AI STORE MANAGER PRO 2.5</h2>
-<p>智能店铺管理系统（原生 REST 修复版）</p>
+<p>智能店铺管理系统（最终官方 SDK 版）</p>
 </header>
 
 <nav id="nav">
@@ -58,6 +59,7 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </nav>
 
 <main>
+<!-- 登录注册区块 -->
 <section id="login" class="card">
 <h3>账号登录 / 注册</h3>
 <input id="loginEmail" type="email" placeholder="邮箱地址" autocomplete="email">
@@ -67,8 +69,10 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 <p id="authMsg"></p>
 </section>
 
+<!-- 主系统界面 -->
 <div id="app" style="display:none">
 
+<!-- 1. 首页 -->
 <section id="dashboard" class="page show">
 <div class="card">
 <h3>经营概览</h3>
@@ -87,6 +91,7 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </div>
 </section>
 
+<!-- 2. 产品库存 -->
 <section id="products" class="page">
 <div class="card">
 <h3>添加/编辑产品</h3>
@@ -108,6 +113,7 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </div>
 </section>
 
+<!-- 3. 进销记录 -->
 <section id="transactions" class="page">
 <div class="card">
 <h3>记录进货 / 销售</h3>
@@ -126,6 +132,7 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </div>
 </section>
 
+<!-- 4. 费用管理 -->
 <section id="expenses" class="page">
 <div class="card">
 <h3>新增日常费用</h3>
@@ -143,6 +150,7 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </div>
 </section>
 
+<!-- 5. 报表中心 -->
 <section id="reports" class="page">
 <div class="card">
 <h3>数据导出</h3>
@@ -162,6 +170,7 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </div>
 </section>
 
+<!-- 6. AI 经营分析 -->
 <section id="ai" class="page">
 <div class="card">
 <h3>AI 本地经营分析助手</h3>
@@ -171,6 +180,7 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </div>
 </section>
 
+<!-- 7. 数据备份 -->
 <section id="backup" class="page">
 <div class="card">
 <h3>数据完整备份</h3>
@@ -186,42 +196,18 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </main>
 
 <script>
-const SUPABASE_BASE = "https://owpfcmsrizmbyzimwlsk.supabase.co";
-const SUPABASE_KEY = "Sb_publishable_a434FlGqYzGtKIsRd_aHfA_nEUb-C1f";
+// 使用你刚提供的最新 Publishable Key 進行標準初始化
+const SUPABASE_URL = "https://owpfcmsrizmbyzimwlsk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_a434FlqYzGtKIsRd_aHfA_nEUb-C1f";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentStore = null;
 let currentUser = null;
-let accessToken = localStorage.getItem('sb_access_token') || null;
 let products = [];
 let transactions = [];
 let expenses = [];
 
 const formatMoney = n => Number(n || 0).toLocaleString('en-US', {maximumFractionDigits: 2});
-
-// 核心 REST API 请求逻辑（修正针对 Publishable Key 的头部构造）
-async function apiRequest(endpoint, method = 'GET', body = null, extraHeaders = {}) {
-  const headers = {
-    'apikey': SUPABASE_KEY,
-    'Authorization': accessToken ? `Bearer ${accessToken}` : `Bearer ${SUPABASE_KEY}`,
-    'Content-Type': 'application/json',
-    ...extraHeaders
-  };
-  
-  const options = { method, headers };
-  if (body) options.body = JSON.stringify(body);
-  
-  const res = await fetch(`${SUPABASE_BASE}${endpoint}`, options);
-  if (res.status === 204) return null;
-  const text = await res.text();
-  try {
-    const json = JSON.parse(text);
-    if (!res.ok) throw new Error(json.message || json.msg || json.error_description || text);
-    return json;
-  } catch (e) {
-    if (!res.ok) throw new Error(text || e.message);
-    return text;
-  }
-}
 
 // 身份认证
 async function handleAuth(type) {
@@ -235,54 +221,56 @@ async function handleAuth(type) {
     return;
   }
   
-  try {
-    if (type === 'login') {
-      const data = await apiRequest('/auth/v1/token?grant_type=password', 'POST', { email, password });
-      accessToken = data.access_token;
-      currentUser = data.user;
-      localStorage.setItem('sb_access_token', accessToken);
-    } else {
-      const data = await apiRequest('/auth/v1/signup', 'POST', { email, password });
-      if (!data.session) {
-        msgEl.innerText = '注册成功！请检查您的邮箱完成验证后登录。';
-        return;
-      }
-      accessToken = data.session.access_token;
-      currentUser = data.user;
-      localStorage.setItem('sb_access_token', accessToken);
-    }
-    await initStoreContext();
-  } catch (err) {
-    msgEl.innerText = err.message;
+  const result = type === 'login'
+    ? await db.auth.signInWithPassword({email, password})
+    : await db.auth.signUp({email, password});
+    
+  if(result.error) {
+    msgEl.innerText = result.error.message;
+    return;
   }
+  
+  if(type === 'register' && !result.data.session) {
+    msgEl.innerText = '注册成功！请检查您的邮箱完成验证后登录。';
+    return;
+  }
+  
+  currentUser = result.data.user;
+  await initStoreContext();
 }
 
-// 店铺初始化
+// 初始化店铺
 async function initStoreContext() {
-  try {
-    const stores = await apiRequest(`/rest/v1/stores?owner_id=eq.${currentUser.id}&select=*`, 'GET');
-    if (stores && stores.length > 0) {
-      currentStore = stores[0];
-    } else {
-      const storeName = prompt('检测到您尚未创建店铺，请输入您的店铺名称：');
-      if(!storeName) return;
-      const newStores = await apiRequest(`/rest/v1/stores`, 'POST', { owner_id: currentUser.id, store_name: storeName }, { 'Prefer': 'return=representation' });
-      currentStore = newStores[0];
-    }
-    
-    document.getElementById('login').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    await loadData();
-  } catch (err) {
-    alert('店铺加载失败: ' + err.message);
+  const {data, error} = await db.from('stores').select('*').eq('owner_id', currentUser.id).limit(1).maybeSingle();
+  if(error) {
+    alert('读取店铺出错: ' + error.message);
+    return;
   }
+  
+  if(data) {
+    currentStore = data;
+  } else {
+    const storeName = prompt('检测到您尚未创建店铺，请输入您的店铺名称：');
+    if(!storeName) return;
+    const r = await db.from('stores').insert({owner_id: currentUser.id, store_name: storeName}).select().single();
+    if(r.error) {
+      alert('创建店铺失败: ' + r.error.message);
+      return;
+    }
+    currentStore = r.data;
+  }
+  
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  await loadData();
 }
 
 async function logout() {
-  localStorage.removeItem('sb_access_token');
+  await db.auth.signOut();
   location.reload();
 }
 
+// 页面切换控制
 function switchPage(id, btn) {
   document.querySelectorAll('.page').forEach(el => el.classList.remove('show'));
   document.getElementById(id).classList.add('show');
@@ -290,29 +278,30 @@ function switchPage(id, btn) {
   btn.classList.add('active');
 }
 
-// 核心数据拉取
+// 加载核心数据
 async function loadData() {
   if(!currentStore) return;
   const sid = currentStore.id;
   
-  try {
-    const [p, t, e] = await Promise.all([
-      apiRequest(`/rest/v1/products?store_id=eq.${sid}&order=created_at.desc&select=*`, 'GET'),
-      apiRequest(`/rest/v1/inventory_transactions?store_id=eq.${sid}&order=created_at.desc&select=*`, 'GET'),
-      apiRequest(`/rest/v1/expenses?store_id=eq.${sid}&order=expense_date.desc&select=*`, 'GET')
-    ]);
-    
-    products = p || [];
-    transactions = t || [];
-    expenses = e || [];
-    
-    renderAll();
-  } catch (err) {
-    alert('数据加载失败: ' + err.message);
+  const [pRes, tRes, eRes] = await Promise.all([
+    db.from('products').select('*').eq('store_id', sid).order('created_at', {ascending: false}),
+    db.from('inventory_transactions').select('*').eq('store_id', sid).order('created_at', {ascending: false}),
+    db.from('expenses').select('*').eq('store_id', sid).order('expense_date', {ascending: false})
+  ]);
+  
+  if(pRes.error || tRes.error || eRes.error) {
+    alert('数据同步失败，请检查网络');
+    return;
   }
+  
+  products = pRes.data || [];
+  transactions = tRes.data || [];
+  expenses = eRes.data || [];
+  
+  renderAll();
 }
 
-// 视图渲染
+// 渲染视图
 function renderAll() {
   document.getElementById('statProductCount').innerText = products.length;
   document.getElementById('statStockTotal').innerText = products.reduce((sum, p) => sum + Number(p.stock || 0), 0);
@@ -413,38 +402,29 @@ async function saveProduct() {
   if(fileInput.files && fileInput.files[0]) {
     const file = fileInput.files[0];
     const filePath = `${currentStore.id}/${Date.now()}_${file.name}`;
-    try {
-      await fetch(`${SUPABASE_BASE}/storage/v1/object/product-images/${filePath}`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': file.type
-        },
-        body: file
-      });
-      image_url = `${SUPABASE_BASE}/storage/v1/object/public/product-images/${filePath}`;
-    } catch(e) {
-      alert('图片上传失败: ' + e.message);
+    const uploadRes = await db.storage.from('product-images').upload(filePath, file);
+    if(uploadRes.error) {
+      alert('图片上传失败: ' + uploadRes.error.message);
       return;
     }
+    const publicUrlRes = db.storage.from('product-images').getPublicUrl(filePath);
+    image_url = publicUrlRes.data.publicUrl;
   }
   
-  try {
-    if(id) {
-      const payload = {name, cost_price, selling_price, stock};
-      if(image_url) payload.image_url = image_url;
-      await apiRequest(`/rest/v1/products?id=eq.${id}&store_id=eq.${currentStore.id}`, 'PATCH', payload, { 'Prefer': 'return=minimal' });
-    } else {
-      const payload = {store_id: currentStore.id, name, cost_price, selling_price, stock};
-      if(image_url) payload.image_url = image_url;
-      await apiRequest(`/rest/v1/products`, 'POST', payload, { 'Prefer': 'return=minimal' });
-    }
-    resetProductForm();
-    await loadData();
-  } catch (err) {
-    alert('保存产品失败: ' + err.message);
+  if(id) {
+    const payload = {name, cost_price, selling_price, stock};
+    if(image_url) payload.image_url = image_url;
+    const r = await db.from('products').update(payload).eq('id', id).eq('store_id', currentStore.id);
+    if(r.error) return alert('更新失败: ' + r.error.message);
+  } else {
+    const payload = {store_id: currentStore.id, name, cost_price, selling_price, stock};
+    if(image_url) payload.image_url = image_url;
+    const r = await db.from('products').insert(payload);
+    if(r.error) return alert('添加失败: ' + r.error.message);
   }
+  
+  resetProductForm();
+  await loadData();
 }
 
 function editProduct(id) {
@@ -473,12 +453,9 @@ function resetProductForm() {
 
 async function removeProduct(id) {
   if(!confirm('确定要删除该产品吗？')) return;
-  try {
-    await apiRequest(`/rest/v1/products?id=eq.${id}&store_id=eq.${currentStore.id}`, 'DELETE', null, { 'Prefer': 'return=minimal' });
-    await loadData();
-  } catch (err) {
-    alert('删除失败: ' + err.message);
-  }
+  const r = await db.from('products').delete().eq('id', id).eq('store_id', currentStore.id);
+  if(r.error) return alert('删除失败: ' + r.error.message);
+  await loadData();
 }
 
 async function addTransaction() {
@@ -492,20 +469,22 @@ async function addTransaction() {
     return;
   }
   
-  try {
-    await apiRequest(`/rest/v1/rpc/record_inventory_transaction`, 'POST', {
-      p_store_id: currentStore.id,
-      p_product_id: product_id,
-      p_type: transaction_type,
-      p_quantity: quantity,
-      p_unit_price: unit_price
-    });
-    document.getElementById('txQty').value = '';
-    document.getElementById('txPrice').value = '';
-    await loadData();
-  } catch (err) {
-    alert('记录交易失败: ' + err.message);
+  const r = await db.rpc('record_inventory_transaction', {
+    p_store_id: currentStore.id,
+    p_product_id: product_id,
+    p_type: transaction_type,
+    p_quantity: quantity,
+    p_unit_price: unit_price
+  });
+  
+  if(r.error) {
+    alert('记录交易失败: ' + r.error.message);
+    return;
   }
+  
+  document.getElementById('txQty').value = '';
+  document.getElementById('txPrice').value = '';
+  await loadData();
 }
 
 async function addExpense() {
@@ -518,20 +497,22 @@ async function addExpense() {
     return;
   }
   
-  try {
-    await apiRequest(`/rest/v1/expenses`, 'POST', {
-      store_id: currentStore.id,
-      expense_date: new Date().toISOString().slice(0, 10),
-      category,
-      description,
-      amount
-    }, { 'Prefer': 'return=minimal' });
-    document.getElementById('expenseDesc').value = '';
-    document.getElementById('expenseAmount').value = '';
-    await loadData();
-  } catch (err) {
-    alert('保存费用失败: ' + err.message);
+  const r = await db.from('expenses').insert({
+    store_id: currentStore.id,
+    expense_date: new Date().toISOString().slice(0, 10),
+    category,
+    description,
+    amount
+  });
+  
+  if(r.error) {
+    alert('保存费用失败: ' + r.error.message);
+    return;
   }
+  
+  document.getElementById('expenseDesc').value = '';
+  document.getElementById('expenseAmount').value = '';
+  await loadData();
 }
 
 function exportExcel(type) {
@@ -620,19 +601,12 @@ function backupJSON() {
   URL.revokeObjectURL(url);
 }
 
-// 自动会话恢复
+// 自动恢复会话
 async function autoLogin() {
-  if (accessToken) {
-    try {
-      const userRes = await apiRequest('/auth/v1/user', 'GET');
-      if (userRes && userRes.id) {
-        currentUser = userRes;
-        await initStoreContext();
-      }
-    } catch(e) {
-      localStorage.removeItem('sb_access_token');
-      accessToken = null;
-    }
+  const {data} = await db.auth.getSession();
+  if(data.session) {
+    currentUser = data.session.user;
+    await initStoreContext();
   }
 }
 autoLogin();
