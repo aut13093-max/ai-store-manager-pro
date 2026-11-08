@@ -44,7 +44,7 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 
 <header>
 <h2>AI STORE MANAGER PRO 2.5</h2>
-<p>智能店铺管理系统（原生API完美直连版）</p>
+<p>智能店铺管理系统（直连终极版）</p>
 </header>
 
 <nav id="nav">
@@ -207,7 +207,7 @@ let expenses = [];
 
 const formatMoney = n => Number(n || 0).toLocaleString('en-US', {maximumFractionDigits: 2});
 
-// 原生 Fetch 请求封装（完美绕过所有 SDK 格式限制）
+// 完美匹配 publishable key 的原生请求器
 async function apiRequest(endpoint, method = 'GET', body = null, extraHeaders = {}) {
   const headers = {
     'apikey': SUPABASE_KEY,
