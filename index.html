@@ -25,7 +25,7 @@ button.action{background:#2563eb;color:white;border:0;padding:12px 18px;border-r
 @media(min-width:640px){button.action{width:auto}}
 button.danger{background:#dc2626}
 button.secondary{background:#475569}
-.table-container{width:100% ;overflow-x:auto}
+.table-container{width:100%;overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:500px}
 td,th{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left}
 th{background:#f8fafc;font-weight:600;color:#475569}
@@ -267,7 +267,6 @@ async function initStoreContext() {
   }
   
   if(data) {
-    // 远程状态检查：如果 is_active 为 false，立即强制断开并锁定
     if(data.is_active === false) {
       alert('⚠️ Tài khoản hoặc hệ thống của bạn đã tạm ngưng hoạt động. Vui lòng liên hệ quản trị viên để được hỗ trợ.');
       await db.auth.signOut();
@@ -628,16 +627,6 @@ function backupJSON() {
   a.click();
   URL.revokeObjectURL(url);
 }
-
-// Tự động khôi phục phiên đăng nhập
-async function autoLogin() {
-  const {data} = await db.auth.getSession();
-  if(data.session) {
-    currentUser = data.session.user;
-    await initStoreContext();
-  }
-}
-autoLogin();
 </script>
 </body>
 </html>
