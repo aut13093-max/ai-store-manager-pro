@@ -196,9 +196,9 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </main>
 
 <script>
-// Supabase 配置
+// Supabase 配置（请在此处填入你从 Supabase 后台复制的正确 anon/public API 密钥）
 const SUPABASE_URL = "https://owpfcmsrizmbyzimwlsk.supabase.co";
-const SUPABASE_KEY = "sb_publishable_a434FlqYzGtKIsRd_aHfA_nEUb-C1f";
+const SUPABASE_KEY = "填入你正确的Supabase_Anon_Key"; 
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentStore = null;
@@ -310,7 +310,6 @@ function renderAll() {
   const salesTx = transactions.filter(t => t.transaction_type === 'sale');
   const revenue = salesTx.reduce((sum, t) => sum + Number(t.quantity) * Number(t.unit_price), 0);
   
-  // 计算销售成本（基于当时成本价或当前成本价）
   const totalCost = salesTx.reduce((sum, t) => {
     const prod = products.find(x => x.id === t.product_id);
     return sum + Number(t.quantity) * Number(prod?.cost_price || 0);
@@ -392,7 +391,7 @@ function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-// 产品管理逻辑（含图片上传 Storage Bucket）
+// 产品管理逻辑
 async function saveProduct() {
   const id = document.getElementById('editingProductId').value;
   const name = document.getElementById('pName').value.trim();
@@ -420,13 +419,11 @@ async function saveProduct() {
   }
   
   if(id) {
-    // 编辑更新
     const payload = {name, cost_price, selling_price, stock};
     if(image_url) payload.image_url = image_url;
     const r = await db.from('products').update(payload).eq('id', id).eq('store_id', currentStore.id);
     if(r.error) return alert('更新失败: ' + r.error.message);
   } else {
-    // 新增
     const payload = {store_id: currentStore.id, name, cost_price, selling_price, stock};
     if(image_url) payload.image_url = image_url;
     const r = await db.from('products').insert(payload);
