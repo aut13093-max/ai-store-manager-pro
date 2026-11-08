@@ -2,371 +2,630 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>AI STORE MANAGER PRO 2.5</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#f3f5f9;font-family:Arial,sans-serif;color:#202938}
-header{background:#172554;color:white;padding:18px}
-header h2{margin:0}
-nav{display:flex;overflow:auto;background:white;position:sticky;top:0}
-nav button{border:0;background:white;padding:14px;white-space:nowrap}
-nav button.active{color:#2563eb;border-bottom:3px solid #2563eb}
-main{max-width:1000px;margin:auto;padding:15px}
-.card{background:white;padding:16px;border-radius:12px;margin-bottom:14px;box-shadow:0 2px 8px #0000000c}
-input,select,textarea{width:100%;padding:11px;margin:6px 0 12px;border:1px solid #ccd2dd;border-radius:7px}
-button.action{background:#2563eb;color:white;border:0;padding:11px 16px;border-radius:7px;margin:4px;cursor:pointer}
+body{margin:0;background:#f3f5f9;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#202938;-webkit-tap-highlight-color:transparent}
+header{background:#172554;color:white;padding:16px 18px}
+header h2{margin:0;font-size:20px}
+header p{margin:4px 0 0;font-size:13px;opacity:0.8}
+nav{display:flex;overflow-x:auto;background:white;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,0.08);scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{border:0;background:white;padding:14px 16px;white-space:nowrap;font-size:14px;cursor:pointer;color:#475569;transition:all 0.2s}
+nav button.active{color:#2563eb;border-bottom:3px solid #2563eb;font-weight:600}
+main{max-width:1000px;margin:auto;padding:12px}
+.card{background:white;padding:16px;border-radius:12px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.card h3{margin-top:0;font-size:16px;color:#1e293b;border-bottom:1px solid #f1f5f9;padding-bottom:8px}
+input,select,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;background:#fff}
+input:focus,select:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+button.action{background:#2563eb;color:white;border:0;padding:12px 18px;border-radius:8px;margin:4px 4px 4px 0;cursor:pointer;font-size:14px;font-weight:600;width:100%}
+@media(min-width:640px){button.action{width:auto}}
 button.danger{background:#dc2626}
-table{width:100%;border-collapse:collapse;font-size:13px}
-td,th{padding:9px;border-bottom:1px solid #e5e7eb;text-align:left}
+button.secondary{background:#475569}
+.table-container{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:500px}
+td,th{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left}
+th{background:#f8fafc;font-weight:600;color:#475569}
 .page{display:none}.page.show{display:block}
-.stat{display:inline-block;width:48%;padding:12px;background:#eff6ff;border-radius:9px;margin:1%}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+@media(min-width:640px){.stat-grid{grid-template-columns:repeat(3,1fr)}}
+.stat{padding:14px;background:#eff6ff;border-radius:10px;text-align:center}
+.stat span{font-size:12px;color:#64748b}
+.stat b{font-size:18px;color:#1e3a8a;display:block;margin-top:4px}
 .small{color:#64748b;font-size:12px}
+.thumb{width:40px;height:40px;object-fit:cover;border-radius:6px;background:#e2e8f0}
+.flex-row{display:flex;gap:8px;align-items:center}
+#authMsg{color:#dc2626;font-size:14px;margin-top:8px}
 </style>
 </head>
 <body>
 
 <header>
 <h2>AI STORE MANAGER PRO 2.5</h2>
-<p>智能店铺管理系统</p>
+<p>智能店铺管理系统（增强版）</p>
 </header>
 
 <nav id="nav">
-<button class="active" onclick="show('dashboard',this)">首页</button>
-<button onclick="show('products',this)">产品库存</button>
-<button onclick="show('transactions',this)">进销记录</button>
-<button onclick="show('expenses',this)">费用</button>
-<button onclick="show('reports',this)">报表导出</button>
-<button onclick="show('ai',this)">AI分析</button>
-<button onclick="show('backup',this)">数据备份</button>
+<button class="active" onclick="switchPage('dashboard',this)">首页</button>
+<button onclick="switchPage('products',this)">产品库存</button>
+<button onclick="switchPage('transactions',this)">进销记录</button>
+<button onclick="switchPage('expenses',this)">费用</button>
+<button onclick="switchPage('reports',this)">报表导出</button>
+<button onclick="switchPage('ai',this)">AI分析</button>
+<button onclick="switchPage('backup',this)">数据备份</button>
 </nav>
 
 <main>
+<!-- 登录注册区块 -->
 <section id="login" class="card">
-<h3>登录 / 注册</h3>
-<input id="email" type="email" placeholder="邮箱">
-<input id="password" type="password" placeholder="密码">
-<button class="action" onclick="auth('login')">登录</button>
-<button class="action" onclick="auth('register')">注册</button>
+<h3>账号登录 / 注册</h3>
+<input id="loginEmail" type="email" placeholder="邮箱地址" autocomplete="email">
+<input id="loginPassword" type="password" placeholder="密码" autocomplete="current-password">
+<button class="action" onclick="handleAuth('login')">登录系统</button>
+<button class="action secondary" onclick="handleAuth('register')">注册新账号</button>
 <p id="authMsg"></p>
 </section>
 
+<!-- 主系统界面 -->
 <div id="app" style="display:none">
 
+<!-- 1. 首页 -->
 <section id="dashboard" class="page show">
 <div class="card">
 <h3>经营概览</h3>
-<div class="stat">产品数量<br><b id="productCount">0</b></div>
-<div class="stat">库存总量<br><b id="stockTotal">0</b></div>
-<div class="stat">销售收入<br><b id="salesTotal">0</b></div>
-<div class="stat">费用总额<br><b id="expenseTotal">0</b></div>
-<div class="stat">估算利润<br><b id="profitTotal">0</b></div>
-<button class="action" onclick="loadData()">刷新数据</button>
+<div class="stat-grid">
+<div class="stat"><span>产品种类</span><b id="statProductCount">0</b></div>
+<div class="stat"><span>库存总量</span><b id="statStockTotal">0</b></div>
+<div class="stat"><span>销售收入</span><b id="statSalesTotal">0</b></div>
+<div class="stat"><span>费用总额</span><b id="statExpenseTotal">0</b></div>
+<div class="stat" style="grid-column: span 2; background:#ecfdf5;"><span>估算净利润</span><b id="statProfitTotal" style="color:#047857">0</b></div>
+</div>
+<button class="action" onclick="loadData()">刷新经营数据</button>
 </div>
 <div class="card">
-<h3>库存不足提醒</h3>
-<div id="lowStock"></div>
+<h3>库存不足提醒 (&le; 5)</h3>
+<div id="lowStockContainer">暂无库存告警</div>
 </div>
 </section>
 
+<!-- 2. 产品库存 -->
 <section id="products" class="page">
 <div class="card">
-<h3>添加产品</h3>
-<input id="pname" placeholder="产品名称">
-<input id="pcost" type="number" placeholder="成本价">
-<input id="pprice" type="number" placeholder="销售价">
-<input id="pstock" type="number" placeholder="库存数量">
-<button class="action" onclick="addProduct()">添加产品</button>
+<h3>添加/编辑产品</h3>
+<input type="hidden" id="editingProductId">
+<input id="pName" placeholder="产品名称">
+<input id="pCost" type="number" step="0.01" placeholder="成本价">
+<input id="pPrice" type="number" step="0.01" placeholder="销售价">
+<input id="pStock" type="number" placeholder="初始库存数量">
+<div style="margin:6px 0;">
+<label class="small">产品图片（可选）：</label>
+<input id="pImageFile" type="file" accept="image/*">
+</div>
+<button class="action" id="saveProductBtn" onclick="saveProduct()">保存产品</button>
+<button class="action secondary" id="cancelEditBtn" style="display:none" onclick="resetProductForm()">取消编辑</button>
 </div>
 <div class="card">
 <h3>产品列表</h3>
-<div id="productList"></div>
+<div class="table-container" id="productListContainer"></div>
 </div>
 </section>
 
+<!-- 3. 进销记录 -->
 <section id="transactions" class="page">
 <div class="card">
 <h3>记录进货 / 销售</h3>
-<select id="txProduct"></select>
-<select id="txType">
-<option value="purchase">进货</option>
-<option value="sale">销售</option>
+<select id="txProductSelect"></select>
+<select id="txTypeSelect">
+<option value="purchase">进货入库</option>
+<option value="sale">销售出库</option>
 </select>
 <input id="txQty" type="number" placeholder="数量">
-<input id="txPrice" type="number" placeholder="单价">
-<button class="action" onclick="addTransaction()">保存记录</button>
+<input id="txPrice" type="number" step="0.01" placeholder="成交单价">
+<button class="action" onclick="addTransaction()">保存交易记录</button>
 </div>
-<div class="card"><h3>交易记录</h3><div id="txList"></div></div>
+<div class="card">
+<h3>历史交易记录</h3>
+<div class="table-container" id="txListContainer"></div>
+</div>
 </section>
 
+<!-- 4. 费用管理 -->
 <section id="expenses" class="page">
 <div class="card">
-<h3>新增费用</h3>
+<h3>新增日常费用</h3>
 <select id="expenseCategory">
 <option>租金</option><option>工资</option><option>水电</option>
 <option>运输</option><option>营销</option><option>维修</option><option>其他</option>
 </select>
-<input id="expenseDesc" placeholder="费用说明">
-<input id="expenseAmount" type="number" placeholder="金额">
-<button class="action" onclick="addExpense()">保存费用</button>
+<input id="expenseDesc" placeholder="费用说明（如：11月店铺房租）">
+<input id="expenseAmount" type="number" step="0.01" placeholder="金额">
+<button class="action" onclick="addExpense()">保存费用记录</button>
 </div>
-<div class="card"><h3>费用记录</h3><div id="expenseList"></div></div>
+<div class="card">
+<h3>费用流水</h3>
+<div class="table-container" id="expenseListContainer"></div>
+</div>
 </section>
 
+<!-- 5. 报表中心 -->
 <section id="reports" class="page">
 <div class="card">
-<h3>报表中心</h3>
-<button class="action" onclick="exportExcel('products')">导出产品</button>
-<button class="action" onclick="exportExcel('transactions')">导出交易</button>
-<button class="action" onclick="exportExcel('expenses')">导出费用</button>
-<button class="action" onclick="exportExcel('all')">导出全部</button>
+<h3>数据导出</h3>
+<button class="action" onclick="exportExcel('products')">导出产品清单 Excel</button>
+<button class="action" onclick="exportExcel('transactions')">导出进销记录 Excel</button>
+<button class="action" onclick="exportExcel('expenses')">导出费用流水 Excel</button>
+<button class="action" onclick="exportExcel('all')">一键导出全部报表</button>
 </div>
 <div class="card">
-<h3>每日经营报告</h3>
-<input type="date" id="reportDate">
-<button class="action" onclick="dailyReport()">生成日报</button>
-<button class="action" onclick="window.print()">打印报告</button>
-<div id="dailyReport"></div>
+<h3>每日经营日报</h3>
+<div class="flex-row">
+<input type="date" id="reportDateInput" style="margin:0;">
+<button class="action" style="margin:0;width:auto;" onclick="generateDailyReport()">生成日报</button>
+</div>
+<button class="action secondary" style="margin-top:10px;" onclick="window.print()">打印当前报告</button>
+<div id="dailyReportResult" style="margin-top:12px;"></div>
 </div>
 </section>
 
+<!-- 6. AI 经营分析 -->
 <section id="ai" class="page">
 <div class="card">
-<h3>AI 经营分析</h3>
-<p class="small">本地规则分析，不代表云端AI预测。</p>
-<button class="action" onclick="analyzeBusiness()">开始分析</button>
-<div id="aiResult"></div>
+<h3>AI 本地经营分析助手</h3>
+<p class="small">基于当前店铺数据进行多维度规则评估与风险提示。</p>
+<button class="action" onclick="runAiAnalysis()">开始深度分析</button>
+<div id="aiResultContainer" style="margin-top:12px;"></div>
 </div>
 </section>
 
+<!-- 7. 数据备份 -->
 <section id="backup" class="page">
 <div class="card">
-<h3>数据备份</h3>
-<button class="action" onclick="backupJSON()">下载 JSON 备份</button>
-<p class="small">备份包含产品、交易和费用记录及图片URL，不包含图片文件本身。</p>
+<h3>数据完整备份</h3>
+<button class="action" onclick="backupJSON()">下载完整 JSON 备份文件</button>
+<p class="small">备份包含所有店铺档案、产品属性、交易及费用流水。图片资源以线上 URL 链接形式保存。</p>
 </div>
 </section>
 
-<button class="action danger" onclick="logout()">退出登录</button>
+<div style="padding: 10px 0; text-align: right;">
+<button class="action danger" style="width:auto;" onclick="logout()">退出当前账号</button>
+</div>
 </div>
 </main>
 
 <script>
-const SUPABASE_URL="https://owpfcmsrizmbyzimwlsk.supabase.co";
-const SUPABASE_KEY="sb_publishable_a434FlqYzGtKIsRd_aHfA_nEUb-C1f";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+// Supabase 配置
+const SUPABASE_URL = "https://owpfcmsrizmbyzimwlsk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_a434FlqYzGtKIsRd_aHfA_nEUb-C1f";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let store=null,user=null;
-let products=[],transactions=[],expenses=[];
+let currentStore = null;
+let currentUser = null;
+let products = [];
+let transactions = [];
+let expenses = [];
 
-const money=n=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2});
+const formatMoney = n => Number(n || 0).toLocaleString('en-US', {maximumFractionDigits: 2});
 
-async function auth(type){
- const email=document.getElementById('email').value.trim();
- const password=document.getElementById('password').value;
- if(!email||!password)return alert('请输入邮箱和密码');
- const result=type==='login'
- ?await db.auth.signInWithPassword({email,password})
- :await db.auth.signUp({email,password});
- if(result.error)return authMsg.innerText=result.error.message;
- if(type==='register'&&!result.data.session){
- authMsg.innerText='注册成功，请检查邮箱确认后登录';return;
- }
- user=result.data.user;
- await initStore();
+// 身份认证
+async function handleAuth(type) {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const msgEl = document.getElementById('authMsg');
+  msgEl.innerText = '';
+  
+  if(!email || !password) {
+    msgEl.innerText = '请输入完整的邮箱和密码';
+    return;
+  }
+  
+  const result = type === 'login'
+    ? await db.auth.signInWithPassword({email, password})
+    : await db.auth.signUp({email, password});
+    
+  if(result.error) {
+    msgEl.innerText = result.error.message;
+    return;
+  }
+  
+  if(type === 'register' && !result.data.session) {
+    msgEl.innerText = '注册成功！请检查您的邮箱完成验证后登录。';
+    return;
+  }
+  
+  currentUser = result.data.user;
+  await initStoreContext();
 }
 
-async function initStore(){
- const {data,error}=await db.from('stores').select('*').eq('owner_id',user.id).limit(1).maybeSingle();
- if(error)return alert(error.message);
- if(data)store=data;
- else{
- const name=prompt('请输入店铺名称');
- if(!name)return;
- const r=await db.from('stores').insert({owner_id:user.id,store_name:name}).select().single();
- if(r.error)return alert(r.error.message);
- store=r.data;
- }
- login.style.display='none';
- app.style.display='block';
- await loadData();
+// 初始化店铺
+async function initStoreContext() {
+  const {data, error} = await db.from('stores').select('*').eq('owner_id', currentUser.id).limit(1).maybeSingle();
+  if(error) {
+    alert('读取店铺出错: ' + error.message);
+    return;
+  }
+  
+  if(data) {
+    currentStore = data;
+  } else {
+    const storeName = prompt('检测到您尚未创建店铺，请输入您的店铺名称：');
+    if(!storeName) return;
+    const r = await db.from('stores').insert({owner_id: currentUser.id, store_name: storeName}).select().single();
+    if(r.error) {
+      alert('创建店铺失败: ' + r.error.message);
+      return;
+    }
+    currentStore = r.data;
+  }
+  
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  await loadData();
 }
 
-async function logout(){
- await db.auth.signOut();
- location.reload();
+async function logout() {
+  await db.auth.signOut();
+  location.reload();
 }
 
-function show(id,btn){
- document.querySelectorAll('.page').forEach(x=>x.classList.remove('show'));
- document.getElementById(id).classList.add('show');
- document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('active'));
- btn.classList.add('active');
+// 页面切换控制
+function switchPage(id, btn) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+  document.querySelectorAll('#nav button').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
 }
 
-async function loadData(){
- if(!store)return;
- const sid=store.id;
- const [p,t,e]=await Promise.all([
- db.from('products').select('*').eq('store_id',sid).order('created_at',{ascending:false}),
- db.from('inventory_transactions').select('*').eq('store_id',sid).order('created_at',{ascending:false}),
- db.from('expenses').select('*').eq('store_id',sid).order('expense_date',{ascending:false})
- ]);
- if(p.error||t.error||e.error)return alert('读取数据失败：'+(p.error||t.error||e.error).message);
- products=p.data||[];
- transactions=t.data||[];
- expenses=e.data||[];
- render();
+// 加载核心数据
+async function loadData() {
+  if(!currentStore) return;
+  const sid = currentStore.id;
+  
+  const [pRes, tRes, eRes] = await Promise.all([
+    db.from('products').select('*').eq('store_id', sid).order('created_at', {ascending: false}),
+    db.from('inventory_transactions').select('*').eq('store_id', sid).order('created_at', {ascending: false}),
+    db.from('expenses').select('*').eq('store_id', sid).order('expense_date', {ascending: false})
+  ]);
+  
+  if(pRes.error || tRes.error || eRes.error) {
+    alert('数据同步失败，请检查网络');
+    return;
+  }
+  
+  products = pRes.data || [];
+  transactions = tRes.data || [];
+  expenses = eRes.data || [];
+  
+  renderAll();
 }
 
-function render(){
- productCount.innerText=products.length;
- stockTotal.innerText=products.reduce((s,p)=>s+Number(p.stock||0),0);
- const sales=transactions.filter(t=>t.transaction_type==='sale');
- const revenue=sales.reduce((s,t)=>s+Number(t.quantity)*Number(t.unit_price),0);
- const costs=sales.reduce((s,t)=>{
- const p=products.find(x=>x.id===t.product_id);
- return s+Number(t.quantity)*Number(p?.cost_price||0);
- },0);
- const exp=expenses.reduce((s,e)=>s+Number(e.amount||0),0);
- salesTotal.innerText=money(revenue);
- expenseTotal.innerText=money(exp);
- profitTotal.innerText=money(revenue-costs-exp);
-
- productList.innerHTML='<table><tr><th>产品</th><th>成本</th><th>售价</th><th>库存</th><th>操作</th></tr>'+
- products.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(p.cost_price)}</td><td>${money(p.selling_price)}</td><td>${p.stock}</td><td><button onclick="removeProduct('${p.id}')">删除</button></td></tr>`).join('')+'</table>';
-
- txProduct.innerHTML=products.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
- lowStock.innerHTML=products.filter(p=>Number(p.stock)<=5).map(p=>esc(p.name)+'：库存 '+p.stock).join('<br>')||'库存正常';
-
- txList.innerHTML=transactions.map(t=>`<p>${t.transaction_type==='sale'?'销售':'进货'} | ${esc(products.find(p=>p.id===t.product_id)?.name||'产品')} | ${t.quantity} × ${money(t.unit_price)}</p>`).join('');
- expenseList.innerHTML=expenses.map(e=>`<p>${esc(e.expense_date||'')} | ${esc(e.category||'')} | ${esc(e.description||'')} | ${money(e.amount)}</p>`).join('');
+// 渲染视图
+function renderAll() {
+  // 1. 统计概览
+  document.getElementById('statProductCount').innerText = products.length;
+  document.getElementById('statStockTotal').innerText = products.reduce((sum, p) => sum + Number(p.stock || 0), 0);
+  
+  const salesTx = transactions.filter(t => t.transaction_type === 'sale');
+  const revenue = salesTx.reduce((sum, t) => sum + Number(t.quantity) * Number(t.unit_price), 0);
+  
+  // 计算销售成本（基于当时成本价或当前成本价）
+  const totalCost = salesTx.reduce((sum, t) => {
+    const prod = products.find(x => x.id === t.product_id);
+    return sum + Number(t.quantity) * Number(prod?.cost_price || 0);
+  }, 0);
+  
+  const totalExpense = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  
+  document.getElementById('statSalesTotal').innerText = formatMoney(revenue);
+  document.getElementById('statExpenseTotal').innerText = formatMoney(totalExpense);
+  document.getElementById('statProfitTotal').innerText = formatMoney(revenue - totalCost - totalExpense);
+  
+  // 2. 库存告警
+  const lowStock = products.filter(p => Number(p.stock) <= 5);
+  document.getElementById('lowStockContainer').innerHTML = lowStock.length ? 
+    lowStock.map(p => `<p style="color:#dc2626;margin:4px 0;">⚠️ ${escapeHtml(p.name)} - 当前库存: <b>${p.stock}</b></p>`).join('') :
+    '<p style="color:#059669;margin:0;">✨ 所有产品库存充足</p>';
+    
+  // 3. 产品列表渲染
+  document.getElementById('productListContainer').innerHTML = `
+    <table>
+      <tr><th>图片</th><th>名称</th><th>成本</th><th>售价</th><th>库存</th><th>操作</th></tr>
+      ${products.map(p => `
+        <tr>
+          <td><img src="${p.image_url || 'https://via.placeholder.com/40'}" class="thumb" alt="img"></td>
+          <td><b>${escapeHtml(p.name)}</b></td>
+          <td>${formatMoney(p.cost_price)}</td>
+          <td>${formatMoney(p.selling_price)}</td>
+          <td>${p.stock}</td>
+          <td>
+            <button class="action secondary" style="padding:4px 8px;font-size:12px;margin:0 2px;" onclick="editProduct('${p.id}')">编辑</button>
+            <button class="action danger" style="padding:4px 8px;font-size:12px;margin:0 2px;" onclick="removeProduct('${p.id}')">删除</button>
+          </td>
+        </tr>
+      `).join('')}
+    </table>
+  `;
+  
+  // 4. 交易产品下拉选择
+  document.getElementById('txProductSelect').innerHTML = products.map(p => `<option value="${p.id}">${escapeHtml(p.name)} (库存: ${p.stock})</option>`).join('');
+  
+  // 5. 交易流水列表
+  document.getElementById('txListContainer').innerHTML = `
+    <table>
+      <tr><th>类型</th><th>产品名称</th><th>数量</th><th>单价</th><th>总金额</th><th>时间</th></tr>
+      ${transactions.map(t => {
+        const p = products.find(x => x.id === t.product_id);
+        const isSale = t.transaction_type === 'sale';
+        return `
+          <tr>
+            <td><span style="color:${isSale ? '#059669' : '#2563eb'};font-weight:bold;">${isSale ? '销售' : '进货'}</span></td>
+            <td>${escapeHtml(p?.name || '未知产品')}</td>
+            <td>${t.quantity}</td>
+            <td>${formatMoney(t.unit_price)}</td>
+            <td>${formatMoney(t.quantity * t.unit_price)}</td>
+            <td class="small">${new Date(t.created_at).toLocaleString()}</td>
+          </tr>
+        `;
+      }).join('')}
+    </table>
+  `;
+  
+  // 6. 费用流水列表
+  document.getElementById('expenseListContainer').innerHTML = `
+    <table>
+      <tr><th>日期</th><th>类别</th><th>说明</th><th>金额</th></tr>
+      ${expenses.map(e => `
+        <tr>
+          <td>${escapeHtml(e.expense_date)}</td>
+          <td><b>${escapeHtml(e.category)}</b></td>
+          <td>${escapeHtml(e.description || '-')}</td>
+          <td style="color:#dc2626;">-${formatMoney(e.amount)}</td>
+        </tr>
+      `).join('')}
+    </table>
+  `;
 }
 
-function esc(s){
- return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-async function addProduct(){
- const name=pname.value.trim(),cost=Number(pcost.value),price=Number(pprice.value),stock=Number(pstock.value);
- if(!name||cost<0||price<0||stock<0)return alert('请正确填写产品资料');
- const r=await db.from('products').insert({store_id:store.id,name,cost_price:cost,selling_price:price,stock});
- if(r.error)return alert(r.error.message);
- pname.value=pcost.value=pprice.value=pstock.value='';
- await loadData();
+// 产品管理逻辑（含图片上传 Storage Bucket）
+async function saveProduct() {
+  const id = document.getElementById('editingProductId').value;
+  const name = document.getElementById('pName').value.trim();
+  const cost_price = Number(document.getElementById('pCost').value);
+  const selling_price = Number(document.getElementById('pPrice').value);
+  const stock = Number(document.getElementById('pStock').value);
+  const fileInput = document.getElementById('pImageFile');
+  
+  if(!name || cost_price < 0 || selling_price < 0 || isNaN(stock)) {
+    alert('请正确填写产品名称、价格及库存信息');
+    return;
+  }
+  
+  let image_url = null;
+  if(fileInput.files && fileInput.files[0]) {
+    const file = fileInput.files[0];
+    const filePath = `${currentStore.id}/${Date.now()}_${file.name}`;
+    const uploadRes = await db.storage.from('product-images').upload(filePath, file);
+    if(uploadRes.error) {
+      alert('图片上传失败: ' + uploadRes.error.message);
+      return;
+    }
+    const publicUrlRes = db.storage.from('product-images').getPublicUrl(filePath);
+    image_url = publicUrlRes.data.publicUrl;
+  }
+  
+  if(id) {
+    // 编辑更新
+    const payload = {name, cost_price, selling_price, stock};
+    if(image_url) payload.image_url = image_url;
+    const r = await db.from('products').update(payload).eq('id', id).eq('store_id', currentStore.id);
+    if(r.error) return alert('更新失败: ' + r.error.message);
+  } else {
+    // 新增
+    const payload = {store_id: currentStore.id, name, cost_price, selling_price, stock};
+    if(image_url) payload.image_url = image_url;
+    const r = await db.from('products').insert(payload);
+    if(r.error) return alert('添加失败: ' + r.error.message);
+  }
+  
+  resetProductForm();
+  await loadData();
 }
 
-async function addTransaction(){
- const product_id=txProduct.value,type=txType.value;
- const quantity=Number(txQty.value),unit_price=Number(txPrice.value);
- if(!product_id||quantity<=0||unit_price<0)return alert('请检查交易资料');
- const r=await db.rpc('record_inventory_transaction',{
- p_store_id:store.id,p_product_id:product_id,
- p_type:type,p_quantity:quantity,p_unit_price:unit_price
- });
- if(r.error)return alert(r.error.message);
- txQty.value=txPrice.value='';
- await loadData();
+function editProduct(id) {
+  const p = products.find(x => x.id === id);
+  if(!p) return;
+  document.getElementById('editingProductId').value = p.id;
+  document.getElementById('pName').value = p.name;
+  document.getElementById('pCost').value = p.cost_price;
+  document.getElementById('pPrice').value = p.selling_price;
+  document.getElementById('pStock').value = p.stock;
+  document.getElementById('saveProductBtn').innerText = '确认修改';
+  document.getElementById('cancelEditBtn').style.display = 'inline-block';
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-async function addExpense(){
- const amount=Number(expenseAmount.value);
- if(amount<=0)return alert('费用金额必须大于0');
- const r=await db.from('expenses').insert({
- store_id:store.id,
- expense_date:new Date().toISOString().slice(0,10),
- category:expenseCategory.value,
- description:expenseDesc.value,
- amount
- });
- if(r.error)return alert(r.error.message);
- expenseDesc.value=expenseAmount.value='';
- await loadData();
+function resetProductForm() {
+  document.getElementById('editingProductId').value = '';
+  document.getElementById('pName').value = '';
+  document.getElementById('pCost').value = '';
+  document.getElementById('pPrice').value = '';
+  document.getElementById('pStock').value = '';
+  document.getElementById('pImageFile').value = '';
+  document.getElementById('saveProductBtn').innerText = '保存产品';
+  document.getElementById('cancelEditBtn').style.display = 'none';
 }
 
-async function removeProduct(id){
- if(!confirm('确定删除产品？'))return;
- const r=await db.from('products').delete().eq('id',id).eq('store_id',store.id);
- if(r.error)return alert(r.error.message);
- await loadData();
+async function removeProduct(id) {
+  if(!confirm('确定要删除该产品吗？')) return;
+  const r = await db.from('products').delete().eq('id', id).eq('store_id', currentStore.id);
+  if(r.error) return alert('删除失败: ' + r.error.message);
+  await loadData();
 }
 
-function exportExcel(type){
- let data={products,transactions,expenses};
- if(type==='all'){
-  data={产品:products,交易:transactions,费用:expenses};
- }else data=data[type];
- const wb=XLSX.utils.book_new();
- if(type==='all'){
-  Object.entries(data).forEach(([name,rows])=>{
-   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),name);
+// 进销交易记录
+async function addTransaction() {
+  const product_id = document.getElementById('txProductSelect').value;
+  const transaction_type = document.getElementById('txTypeSelect').value;
+  const quantity = Number(document.getElementById('txQty').value);
+  const unit_price = Number(document.getElementById('txPrice').value);
+  
+  if(!product_id || quantity <= 0 || unit_price < 0) {
+    alert('请正确填写交易数量与单价');
+    return;
+  }
+  
+  const r = await db.rpc('record_inventory_transaction', {
+    p_store_id: currentStore.id,
+    p_product_id: product_id,
+    p_type: transaction_type,
+    p_quantity: quantity,
+    p_unit_price: unit_price
   });
- }else{
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(data),type);
- }
- XLSX.writeFile(wb,'Store_'+type+'.xlsx');
+  
+  if(r.error) {
+    alert('记录交易失败: ' + r.error.message);
+    return;
+  }
+  
+  document.getElementById('txQty').value = '';
+  document.getElementById('txPrice').value = '';
+  await loadData();
 }
 
-function dailyReport(){
- const date=document.getElementById('reportDate').value||new Date().toISOString().slice(0,10);
- const tx=transactions.filter(t=>(t.created_at||'').slice(0,10)===date);
- const ex=expenses.filter(e=>e.expense_date===date);
- const sales=tx.filter(t=>t.transaction_type==='sale');
- const buys=tx.filter(t=>t.transaction_type==='purchase');
- const revenue=sales.reduce((s,t)=>s+Number(t.quantity)*Number(t.unit_price),0);
- const purchase=buys.reduce((s,t)=>s+Number(t.quantity)*Number(t.unit_price),0);
- const cost=sales.reduce((s,t)=>{
-  const p=products.find(x=>x.id===t.product_id);
-  return s+Number(t.quantity)*Number(p?.cost_price||0);
- },0);
- const expense=ex.reduce((s,e)=>s+Number(e.amount),0);
- dailyReport.innerHTML=`
- <h3>${date} 经营日报</h3>
- <p>销售收入：${money(revenue)}</p>
- <p>进货金额：${money(purchase)}</p>
- <p>费用：${money(expense)}</p>
- <p>估算毛利：${money(revenue-cost)}</p>
- <p>估算净利润：${money(revenue-cost-expense)}</p>`;
+// 费用新增
+async function addExpense() {
+  const category = document.getElementById('expenseCategory').value;
+  const description = document.getElementById('expenseDesc').value.trim();
+  const amount = Number(document.getElementById('expenseAmount').value);
+  
+  if(amount <= 0 || isNaN(amount)) {
+    alert('请输入有效的费用金额');
+    return;
+  }
+  
+  const r = await db.from('expenses').insert({
+    store_id: currentStore.id,
+    expense_date: new Date().toISOString().slice(0, 10),
+    category,
+    description,
+    amount
+  });
+  
+  if(r.error) {
+    alert('保存费用失败: ' + r.error.message);
+    return;
+  }
+  
+  document.getElementById('expenseDesc').value = '';
+  document.getElementById('expenseAmount').value = '';
+  await loadData();
 }
 
-function analyzeBusiness(){
- const result=[];
- const low=products.filter(p=>Number(p.stock)<=5);
- if(low.length)result.push('库存提醒：'+low.map(p=>p.name).join('、')+' 库存不高于5。');
- const noSales=products.filter(p=>!transactions.some(t=>t.product_id===p.id&&t.transaction_type==='sale'));
- if(noSales.length)result.push('销售记录提醒：以下产品没有已记录的销售，不代表一定滞销：'+noSales.map(p=>p.name).join('、'));
- const sales=transactions.filter(t=>t.transaction_type==='sale');
- if(!sales.length)result.push('目前没有销售记录，暂时无法分析销售表现。');
- else{
-  const revenue=sales.reduce((s,t)=>s+Number(t.quantity)*Number(t.unit_price),0);
-  result.push('累计销售收入：'+money(revenue));
- }
- aiResult.innerHTML=result.map(x=>'<p>• '+esc(x)+'</p>').join('');
+// Excel 导出
+function exportExcel(type) {
+  let exportData = {products, transactions, expenses};
+  const wb = XLSX.utils.book_new();
+  
+  if(type === 'all') {
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(products), '产品清单');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(transactions), '进销流水');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(expenses), '费用流水');
+  } else {
+    const mapName = {products: '产品清单', transactions: '进销流水', expenses: '费用流水'};
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportData[type]), mapName[type]);
+  }
+  
+  XLSX.writeFile(wb, `Store_${type}_${Date.now()}.xlsx`);
 }
 
-function backupJSON(){
- const backup={
-  version:'2.5',created_at:new Date().toISOString(),
-  store,products,transactions,expenses
- };
- const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
- const a=document.createElement('a');
- a.href=URL.createObjectURL(blob);
- a.download='store-backup-'+Date.now()+'.json';
- a.click();
- URL.revokeObjectURL(a.href);
+// 每日经营报告
+function generateDailyReport() {
+  const dateStr = document.getElementById('reportDateInput').value || new Date().toISOString().slice(0, 10);
+  const dayTx = transactions.filter(t => (t.created_at || '').slice(0, 10) === dateStr);
+  const dayEx = expenses.filter(e => e.expense_date === dateStr);
+  
+  const sales = dayTx.filter(t => t.transaction_type === 'sale');
+  const purchases = dayTx.filter(t => t.transaction_type === 'purchase');
+  
+  const revenue = sales.reduce((s, t) => s + Number(t.quantity) * Number(t.unit_price), 0);
+  const purchaseAmount = purchases.reduce((s, t) => s + Number(t.quantity) * Number(t.unit_price), 0);
+  const expenseAmount = dayEx.reduce((s, e) => s + Number(e.amount), 0);
+  
+  const cost = sales.reduce((s, t) => {
+    const p = products.find(x => x.id === t.product_id);
+    return s + Number(t.quantity) * Number(p?.cost_price || 0);
+  }, 0);
+  
+  document.getElementById('dailyReportResult').innerHTML = `
+    <div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0;">
+      <h4>📅 ${dateStr} 经营日报</h4>
+      <p>销售收入：<b>${formatMoney(revenue)}</b></p>
+      <p>进货支出：<b>${formatMoney(purchaseAmount)}</b></p>
+      <p>日常费用：<b>${formatMoney(expenseAmount)}</b></p>
+      <p>估算毛利：<b>${formatMoney(revenue - cost)}</b></p>
+      <p>估算净利润：<b style="color:#047857">${formatMoney(revenue - cost - expenseAmount)}</b></p>
+    </div>
+  `;
 }
 
-async function start(){
- const {data}=await db.auth.getSession();
- if(data.session){
-  user=data.session.user;
-  await initStore();
- }
+// AI 本地智能分析
+function runAiAnalysis() {
+  const suggestions = [];
+  const lowStock = products.filter(p => Number(p.stock) <= 5);
+  
+  if(lowStock.length) {
+    suggestions.push(`库存预警：检测到有 ${lowStock.length} 种商品库存低于或等于 5 件（如：${lowStock.map(p=>p.name).join('、')}），建议及时补货。`);
+  }
+  
+  const soldProductIds = new Set(transactions.filter(t => t.transaction_type === 'sale').map(t => t.product_id));
+  const deadStock = products.filter(p => !soldProductIds.has(p.id));
+  if(deadStock.length) {
+    suggestions.push(`滞销分析：有 ${deadStock.length} 种产品目前暂无销售出库记录，可考虑通过促销或调整陈列提高动销率。`);
+  }
+  
+  if(!transactions.length) {
+    suggestions.push('暂无任何交易流水，建议尽快录入第一笔销售或进货数据以激活高级分析功能。');
+  } else {
+    suggestions.push('经营状态平稳：建议持续关注畅销单品的毛利率与现金流周转效率。');
+  }
+  
+  document.getElementById('aiResultContainer').innerHTML = suggestions.map(s => `<p style="margin:6px 0;">• ${escapeHtml(s)}</p>`).join('');
 }
-start();
+
+// 数据完整 JSON 备份
+function backupJSON() {
+  const backupObj = {
+    version: '2.5',
+    created_at: new Date().toISOString(),
+    store: currentStore,
+    products,
+    transactions,
+    expenses
+  };
+  const blob = new Blob([JSON.stringify(backupObj, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `store-backup-${currentStore.id}-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// 自动引导恢复会话
+async function autoLogin() {
+  const {data} = await db.auth.getSession();
+  if(data.session) {
+    currentUser = data.session.user;
+    await initStoreContext();
+  }
+}
+autoLogin();
 </script>
 </body>
 </html>
