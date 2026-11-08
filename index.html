@@ -1,713 +1,372 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0c3b30">
-<title>AI STORE MANAGER PRO 2.4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI STORE MANAGER PRO 2.5</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
-:root{--green:#0f6b4f;--green2:#1a8a68;--dark:#0c3b30;--bg:#eef3f0;--text:#17261f;--muted:#6b7a73;--line:#e3ebe6;--amber:#c77d0a;--red:#b42318}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--text);font:13.5px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding-bottom:calc(70px + env(safe-area-inset-bottom))}
-header{background:linear-gradient(135deg,#0c3b30,#127a5a);color:#fff;padding:15px 16px 17px;border-radius:0 0 18px 18px}
-header h2{margin:0 0 2px;font-size:16px;font-weight:700;letter-spacing:.2px}
-header p{margin:0;color:#bfe3d3;font-size:11px}
-main{max-width:900px;margin:auto;padding:12px 10px}
-.panel,.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:11px;box-shadow:0 1px 2px rgba(15,60,45,.05),0 4px 14px rgba(15,60,45,.04)}
-h3{margin:0 0 10px;font-size:14.5px;font-weight:700}
-label{display:block;font-size:11.5px;color:var(--muted);margin-top:6px;font-weight:600}
-input,select,button{width:100%;padding:9px 12px;margin:4px 0;border:1px solid #d5dfd9;border-radius:10px;font:14px system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;min-height:42px}
-input,select{background:#fbfdfc;color:var(--text)}
-input:focus,select:focus{outline:none;border-color:var(--green2);box-shadow:0 0 0 3px rgba(26,138,104,.15)}
-button{background:var(--green);color:#fff;border:0;font-weight:600;cursor:pointer;letter-spacing:.1px}
-button:disabled{opacity:.55;cursor:wait}
-button:active{transform:scale(.985);filter:brightness(.93)}
-button:focus-visible{outline:2px solid var(--green2);outline-offset:2px}
-button.secondary{background:#e5f2ec;color:#0f5a42}
-button.danger{background:#fdecea;color:var(--red)}
-button.light{background:#eef2f0;color:#3a4a43}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:11px}
-.card{margin:0;padding:11px 12px;border-left:4px solid var(--green2)}
-.card:nth-child(2){border-left-color:#2f9e6f}
-.card:nth-child(3){border-left-color:var(--amber)}
-.card:nth-child(4){border-left-color:#4b6a8a}
-.card small{color:var(--muted);font-size:11px;display:block;line-height:1.3}
-.card strong{display:block;font-size:15px;margin-top:5px;overflow-wrap:anywhere;font-weight:700}
-.nav{display:flex;gap:6px;overflow-x:auto;margin:0 -10px 11px;padding:7px 10px;position:sticky;top:0;z-index:5;background:rgba(238,243,240,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);scrollbar-width:none}
-.nav::-webkit-scrollbar{display:none}
-.nav button{flex:none;width:auto;min-width:max-content;white-space:nowrap;margin:0;padding:7px 14px;min-height:34px;font-size:12.5px;border-radius:999px;background:#fff;color:#2d4a3f;border:1px solid var(--line);font-weight:600}
-.nav button.on,.filter button.on{background:var(--green);color:#fff;border-color:var(--green)}
-.hidden{display:none!important}
-.item{padding:11px 0;border-bottom:1px solid var(--line)}
-.item:last-child{border-bottom:0}
-.muted{color:var(--muted);font-size:11.5px}
-.actions{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
-.actions button{width:auto;min-height:34px;padding:6px 16px;font-size:12.5px;margin:0;border-radius:9px}
-#status{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:30;max-width:520px;margin:0 auto;padding:10px 14px;border-radius:12px;background:#0c3b30;color:#e7fff5;font-size:12.5px;white-space:pre-wrap;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-#status.err{background:#7a1a12;color:#ffeceb}
-#status:empty{display:none}
-footer{text-align:center;color:#8a9a92;font-size:11px;padding:14px}
-.statline{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #eff4f1;font-size:13px}
-.statline:last-child{border-bottom:0}
-.statline span:first-child{color:var(--muted)}
-.filter{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
-.filter button{min-height:36px;font-size:12.5px;margin:0;border-radius:999px;background:#e5f2ec;color:#0f5a42}
-.modal{position:fixed;inset:0;background:rgba(10,30,24,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:14px;z-index:20}
-.modalbox{background:#fff;border-radius:18px;padding:16px;width:min(100%,440px);max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3)}
-.good{color:#0b7a4b!important}.bad{color:var(--red)!important}
-.big{background:#f4f9f6;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
-.big strong{font-size:20px;display:block;margin-top:3px}
-.photo-box{border:1.5px dashed #b8cbc1;border-radius:14px;padding:11px;margin:9px 0;background:#f8fbf9}
-.photo-preview{display:block;width:100%;max-height:240px;object-fit:contain;border-radius:12px;background:#eaf0ed;margin-bottom:9px}
-.photo-empty{display:flex;align-items:center;justify-content:center;height:84px;border-radius:12px;background:#eaf0ed;color:var(--muted);font-size:12px;margin-bottom:9px;text-align:center;padding:6px}
-.photo-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.photo-actions button{margin:0;font-size:12.5px}
-.pitem{display:flex;gap:12px;align-items:flex-start}
-.pbody{flex:1;min-width:0}
-.pbody b{font-size:14px}
-.product-photo{width:68px;height:68px;flex:none;object-fit:cover;border-radius:12px;background:#eaf0ed;cursor:zoom-in;border:1px solid var(--line)}
-.product-photo.ph{display:flex;align-items:center;justify-content:center;font-size:26px;cursor:default}
-.viewer img{display:block;width:100%;max-height:70vh;object-fit:contain;border-radius:12px}
-@media(min-width:650px){.cards{grid-template-columns:repeat(4,minmax(0,1fr))}.filter{grid-template-columns:repeat(5,minmax(0,1fr))}}
+*{box-sizing:border-box}
+body{margin:0;background:#f3f5f9;font-family:Arial,sans-serif;color:#202938}
+header{background:#172554;color:white;padding:18px}
+header h2{margin:0}
+nav{display:flex;overflow:auto;background:white;position:sticky;top:0}
+nav button{border:0;background:white;padding:14px;white-space:nowrap}
+nav button.active{color:#2563eb;border-bottom:3px solid #2563eb}
+main{max-width:1000px;margin:auto;padding:15px}
+.card{background:white;padding:16px;border-radius:12px;margin-bottom:14px;box-shadow:0 2px 8px #0000000c}
+input,select,textarea{width:100%;padding:11px;margin:6px 0 12px;border:1px solid #ccd2dd;border-radius:7px}
+button.action{background:#2563eb;color:white;border:0;padding:11px 16px;border-radius:7px;margin:4px;cursor:pointer}
+button.danger{background:#dc2626}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:9px;border-bottom:1px solid #e5e7eb;text-align:left}
+.page{display:none}.page.show{display:block}
+.stat{display:inline-block;width:48%;padding:12px;background:#eff6ff;border-radius:9px;margin:1%}
+.small{color:#64748b;font-size:12px}
 </style>
 </head>
 <body>
-<header><h2>🏪 AI STORE MANAGER PRO</h2><p>Trợ lý quản lý cửa hàng thông minh · Cloud 2.4</p></header>
+
+<header>
+<h2>AI STORE MANAGER PRO 2.5</h2>
+<p>智能店铺管理系统</p>
+</header>
+
+<nav id="nav">
+<button class="active" onclick="show('dashboard',this)">首页</button>
+<button onclick="show('products',this)">产品库存</button>
+<button onclick="show('transactions',this)">进销记录</button>
+<button onclick="show('expenses',this)">费用</button>
+<button onclick="show('reports',this)">报表导出</button>
+<button onclick="show('ai',this)">AI分析</button>
+<button onclick="show('backup',this)">数据备份</button>
+</nav>
+
 <main>
-
-<section id="auth" class="panel">
-<h3>🔐 Đăng nhập / Đăng ký</h3>
-<input id="email" type="email" placeholder="Email" autocomplete="email">
-<input id="password" type="password" placeholder="Mật khẩu (ít nhất 6 ký tự)" autocomplete="current-password">
-<button onclick="signIn(this)">Đăng nhập</button>
-<button class="secondary" onclick="signUp(this)">Tạo tài khoản mới</button>
-<p class="muted">Nếu hệ thống yêu cầu xác nhận email, hãy mở email để xác nhận trước khi đăng nhập.</p>
+<section id="login" class="card">
+<h3>登录 / 注册</h3>
+<input id="email" type="email" placeholder="邮箱">
+<input id="password" type="password" placeholder="密码">
+<button class="action" onclick="auth('login')">登录</button>
+<button class="action" onclick="auth('register')">注册</button>
+<p id="authMsg"></p>
 </section>
 
-<section id="app" class="hidden">
-<div class="panel"><div id="accountInfo" class="muted"></div><button class="danger" onclick="signOut()">Đăng xuất</button></div>
+<div id="app" style="display:none">
 
-<section id="storeSetup" class="panel hidden">
-<h3>🏪 Tạo cửa hàng</h3>
-<input id="storeName" placeholder="Tên cửa hàng">
-<button onclick="createStore(this)">Tạo cửa hàng</button>
+<section id="dashboard" class="page show">
+<div class="card">
+<h3>经营概览</h3>
+<div class="stat">产品数量<br><b id="productCount">0</b></div>
+<div class="stat">库存总量<br><b id="stockTotal">0</b></div>
+<div class="stat">销售收入<br><b id="salesTotal">0</b></div>
+<div class="stat">费用总额<br><b id="expenseTotal">0</b></div>
+<div class="stat">估算利润<br><b id="profitTotal">0</b></div>
+<button class="action" onclick="loadData()">刷新数据</button>
+</div>
+<div class="card">
+<h3>库存不足提醒</h3>
+<div id="lowStock"></div>
+</div>
 </section>
 
-<div id="storeArea" class="hidden">
-<div class="panel"><b id="storeTitle">Cửa hàng</b><p class="muted" style="margin:3px 0 0">Dữ liệu được lưu trực tuyến trên Supabase.</p></div>
-
-<div class="cards">
-<div class="card"><small>Doanh thu hôm nay</small><strong id="revenue">0 ₫</strong></div>
-<div class="card"><small>Lợi nhuận gộp hôm nay (ước tính)</small><strong id="profit">0 ₫</strong></div>
-<div class="card"><small>Số mặt hàng</small><strong id="count">0</strong></div>
-<div class="card"><small>Giá trị tồn kho</small><strong id="stockValue">0 ₫</strong></div>
+<section id="products" class="page">
+<div class="card">
+<h3>添加产品</h3>
+<input id="pname" placeholder="产品名称">
+<input id="pcost" type="number" placeholder="成本价">
+<input id="pprice" type="number" placeholder="销售价">
+<input id="pstock" type="number" placeholder="库存数量">
+<button class="action" onclick="addProduct()">添加产品</button>
 </div>
-
-<div class="nav" id="nav">
-<button data-tab="home" onclick="show('home')">Tổng quan</button>
-<button data-tab="products" onclick="show('products')">Sản phẩm</button>
-<button data-tab="purchase" onclick="show('purchase')">Nhập hàng</button>
-<button data-tab="sales" onclick="show('sales')">Bán hàng</button>
-<button data-tab="expenses" onclick="show('expenses')">Chi phí</button>
-<button data-tab="analytics" onclick="show('analytics')">📈 Lãi lỗ</button>
-</div>
-
-<section id="home">
-<div class="panel">
-<h3>📊 Thống kê kinh doanh</h3>
-<div class="filter" id="periodBtns">
-<button data-p="today" onclick="setPeriod('today')">Hôm nay</button>
-<button data-p="yesterday" onclick="setPeriod('yesterday')">Hôm qua</button>
-<button data-p="month" onclick="setPeriod('month')">Tháng này</button>
-<button data-p="year" onclick="setPeriod('year')">Năm nay</button>
-<button data-p="all" onclick="setPeriod('all')">Tất cả</button>
-</div>
-<p class="muted" id="periodLabel">Đang xem: Hôm nay</p>
-<div id="summary"></div>
-<p class="muted">Lợi nhuận gộp được ước tính theo giá nhập hiện tại của sản phẩm. Lợi nhuận ròng = lợi nhuận gộp − chi phí đã ghi nhận.</p>
-</div>
-<div class="panel"><h3>🏆 Sản phẩm bán chạy (theo kỳ đang xem)</h3><div id="topProducts"></div></div>
-<div class="panel"><h3>📦 Tổng quan tồn kho</h3><div id="inventorySummary"></div></div>
-<div class="panel"><h3>⚠️ Cảnh báo tồn kho</h3><div id="alerts">Chưa có dữ liệu</div></div>
-<div class="panel"><h3>📜 Giao dịch gần đây</h3><div id="history"></div></div>
-</section>
-
-<section id="products" class="hidden">
-<div class="panel">
-<h3>➕ Thêm sản phẩm</h3>
-<input id="pname" placeholder="Tên sản phẩm">
-<div class="row">
-<input id="pcost" type="number" min="0" inputmode="decimal" placeholder="Giá nhập (₫)">
-<input id="pprice" type="number" min="0" inputmode="decimal" placeholder="Giá bán (₫)">
-</div>
-<input id="pstock" type="number" min="0" inputmode="numeric" placeholder="Số lượng ban đầu">
-<div class="photo-box">
-<label style="margin-top:0">📷 Ảnh sản phẩm (không bắt buộc)</label>
-<div id="newPhotoArea"><div class="photo-empty">Chưa chọn ảnh</div></div>
-<div class="photo-actions">
-<button type="button" class="secondary" onclick="$('camNew').click()">📸 Chụp ảnh</button>
-<button type="button" class="secondary" onclick="$('galNew').click()">🖼️ Chọn từ thư viện</button>
-</div>
-<button type="button" class="light" id="clearNewBtn" onclick="clearNewPhoto()" style="display:none">Bỏ ảnh đã chọn</button>
-<input id="camNew" type="file" accept="image/*" capture="environment" class="hidden" onchange="onPickNew(this)">
-<input id="galNew" type="file" accept="image/*" class="hidden" onchange="onPickNew(this)">
-<p class="muted">Ảnh được tự động thu nhỏ trước khi tải lên. Nếu ảnh lỗi, thông tin sản phẩm vẫn được lưu.</p>
-</div>
-<button onclick="addProduct(this)">Lưu sản phẩm</button>
-</div>
-<div class="panel">
-<h3>📦 Danh sách sản phẩm</h3>
-<input id="searchProduct" placeholder="🔍 Tìm sản phẩm theo tên" oninput="render()">
+<div class="card">
+<h3>产品列表</h3>
 <div id="productList"></div>
 </div>
 </section>
 
-<section id="purchase" class="hidden">
-<div class="panel">
-<h3>📥 Nhập hàng</h3>
-<select id="buyProduct" onchange="fillPrice('buy')"></select>
-<input id="buyQty" type="number" min="1" inputmode="numeric" placeholder="Số lượng nhập">
-<input id="buyCost" type="number" min="0" inputmode="decimal" placeholder="Giá nhập mỗi sản phẩm (₫)">
-<button onclick="doTransaction('purchase',this)">Xác nhận nhập hàng</button>
+<section id="transactions" class="page">
+<div class="card">
+<h3>记录进货 / 销售</h3>
+<select id="txProduct"></select>
+<select id="txType">
+<option value="purchase">进货</option>
+<option value="sale">销售</option>
+</select>
+<input id="txQty" type="number" placeholder="数量">
+<input id="txPrice" type="number" placeholder="单价">
+<button class="action" onclick="addTransaction()">保存记录</button>
+</div>
+<div class="card"><h3>交易记录</h3><div id="txList"></div></div>
+</section>
+
+<section id="expenses" class="page">
+<div class="card">
+<h3>新增费用</h3>
+<select id="expenseCategory">
+<option>租金</option><option>工资</option><option>水电</option>
+<option>运输</option><option>营销</option><option>维修</option><option>其他</option>
+</select>
+<input id="expenseDesc" placeholder="费用说明">
+<input id="expenseAmount" type="number" placeholder="金额">
+<button class="action" onclick="addExpense()">保存费用</button>
+</div>
+<div class="card"><h3>费用记录</h3><div id="expenseList"></div></div>
+</section>
+
+<section id="reports" class="page">
+<div class="card">
+<h3>报表中心</h3>
+<button class="action" onclick="exportExcel('products')">导出产品</button>
+<button class="action" onclick="exportExcel('transactions')">导出交易</button>
+<button class="action" onclick="exportExcel('expenses')">导出费用</button>
+<button class="action" onclick="exportExcel('all')">导出全部</button>
+</div>
+<div class="card">
+<h3>每日经营报告</h3>
+<input type="date" id="reportDate">
+<button class="action" onclick="dailyReport()">生成日报</button>
+<button class="action" onclick="window.print()">打印报告</button>
+<div id="dailyReport"></div>
 </div>
 </section>
 
-<section id="sales" class="hidden">
-<div class="panel">
-<h3>🛒 Ghi nhận bán hàng</h3>
-<select id="sellProduct" onchange="fillPrice('sell')"></select>
-<input id="sellQty" type="number" min="1" inputmode="numeric" placeholder="Số lượng bán">
-<input id="sellPrice" type="number" min="1" inputmode="decimal" placeholder="Giá bán mỗi sản phẩm (₫)">
-<button onclick="doTransaction('sale',this)">Xác nhận bán hàng</button>
+<section id="ai" class="page">
+<div class="card">
+<h3>AI 经营分析</h3>
+<p class="small">本地规则分析，不代表云端AI预测。</p>
+<button class="action" onclick="analyzeBusiness()">开始分析</button>
+<div id="aiResult"></div>
 </div>
 </section>
 
-<section id="expenses" class="hidden">
-<div class="panel">
-<h3>💸 Thêm chi phí cửa hàng</h3>
-<label for="expenseDate">Ngày chi phí</label>
-<input id="expenseDate" type="date">
-<select id="expenseCategory"></select>
-<input id="expenseDescription" placeholder="Mô tả chi phí">
-<input id="expenseAmount" type="number" min="1" step="any" inputmode="decimal" placeholder="Số tiền (₫)">
-<button onclick="addExpense(this)">Lưu chi phí</button>
-</div>
-<div class="panel">
-<h3>📋 Danh sách chi phí</h3>
-<p class="muted">Hiển thị theo bộ lọc thời gian đang chọn ở trang Tổng quan.</p>
-<div id="expenseList"></div>
+<section id="backup" class="page">
+<div class="card">
+<h3>数据备份</h3>
+<button class="action" onclick="backupJSON()">下载 JSON 备份</button>
+<p class="small">备份包含产品、交易和费用记录及图片URL，不包含图片文件本身。</p>
 </div>
 </section>
 
-<section id="analytics" class="hidden">
-<div class="panel">
-<h3>📅 Phân tích lãi lỗ theo ngày</h3>
-<label for="analysisDate">Chọn ngày</label>
-<input id="analysisDate" type="date" onchange="renderAnalytics()">
-<div id="dailyAnalytics"></div>
+<button class="action danger" onclick="logout()">退出登录</button>
 </div>
-<div class="panel">
-<h3>📊 Phân tích lãi lỗ theo tháng</h3>
-<label for="analysisMonth">Chọn tháng</label>
-<input id="analysisMonth" type="month" onchange="renderAnalytics()">
-<div id="monthlyAnalytics"></div>
-</div>
-<p class="muted">Lợi nhuận gộp là số ước tính theo giá nhập hiện tại của sản phẩm. Nếu bạn sửa giá nhập, lợi nhuận ước tính của các giao dịch cũ có thể thay đổi.</p>
-</section>
-</div>
-</section>
-
-<footer>AI STORE MANAGER PRO · Cloud Version 2.4</footer>
 </main>
-<p id="status" role="status"></p>
-<div id="modalRoot"></div>
 
 <script>
 const SUPABASE_URL="https://owpfcmsrizmbyzimwlsk.supabase.co";
-const SUPABASE_KEY="sb_publishable_a434FlGqYzGtKIsRd_aHfA_nEUb-C1f";
+const SUPABASE_KEY="sb_publishable_a434FlqYzGtKIsRd_aHfA_nEUb-C1f";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const BUCKET="product-images",LOW_STOCK=5;
-const CATS={"租金":"Tiền thuê mặt bằng","工资":"Lương nhân viên","水电":"Điện nước","运输":"Vận chuyển","营销":"Marketing","维修":"Sửa chữa","其他":"Khác"};
-const catName=c=>CATS[c]||c;
-const PERIODS={today:"Hôm nay",yesterday:"Hôm qua",month:"Tháng này",year:"Năm nay",all:"Tất cả"};
-let user=null,store=null,products=[],transactions=[],expenses=[],period="today",tab="home",newImg=null,editImg=null,msgTimer=null;
 
-const $=id=>document.getElementById(id);
-function msg(t,err){
- const s=$("status");s.textContent=t||"";s.className=err?"err":"";
- clearTimeout(msgTimer);
- if(t)msgTimer=setTimeout(()=>{s.textContent=""},err?9000:4500);
-}
-function money(n){return Number(n||0).toLocaleString("vi-VN")+" ₫"}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function val(id){return $(id).value.trim()}
-function dateKey(d){const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`}
-function localDate(){return dateKey(new Date())}
-function line(l,v){return `<div class="statline"><span>${l}</span><b>${v}</b></div>`}
-function pname(id){return products.find(p=>p.id===id)?.name||"Sản phẩm đã xóa"}
-function pcostOf(id){return Number(products.find(p=>p.id===id)?.cost_price||0)}
-function fmtErr(e){return e&&e.message?e.message:String(e)}
-function safeUrl(u){return typeof u==="string"&&/^https:\/\//.test(u)?u:""}
-async function guard(btn,fn){if(btn)btn.disabled=true;try{await fn()}catch(e){msg("Lỗi: "+fmtErr(e),true)}finally{if(btn)btn.disabled=false}}
+let store=null,user=null;
+let products=[],transactions=[],expenses=[];
 
-function show(id){
- tab=id;
- ["home","products","purchase","sales","expenses","analytics"].forEach(x=>$(x).classList.toggle("hidden",x!==id));
- document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===id));
- if(id==="analytics")renderAnalytics();
- window.scrollTo({top:0});
-}
-function inPeriod(date){
- const d=new Date(date),now=new Date(),key=dateKey(d);
- if(period==="all")return true;
- if(period==="today")return key===dateKey(now);
- if(period==="yesterday"){const y=new Date(now);y.setDate(y.getDate()-1);return key===dateKey(y)}
- if(period==="month")return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
- if(period==="year")return d.getFullYear()===now.getFullYear();
- return false;
-}
-function setPeriod(p){period=p;render()}
+const money=n=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2});
 
-/* ===== ẢNH SẢN PHẨM ===== */
-function compressImage(file){
- return new Promise((resolve,reject)=>{
-  if(!file||!/^image\//.test(file.type)){reject(new Error("Tệp đã chọn không phải là ảnh."));return}
-  if(file.size>20*1024*1024){reject(new Error("Ảnh quá lớn (tối đa 20MB)."));return}
-  const url=URL.createObjectURL(file),img=new Image();
-  img.onload=()=>{
-   let w=img.naturalWidth,h=img.naturalHeight;
-   if(!w||!h){URL.revokeObjectURL(url);reject(new Error("Không đọc được kích thước ảnh."));return}
-   const k=Math.min(1,1024/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);
-   const c=document.createElement("canvas");c.width=w;c.height=h;
-   const ctx=c.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
-   URL.revokeObjectURL(url);
-   c.toBlob(b=>{
-    if(!b){reject(new Error("Không xử lý được ảnh."));return}
-    if(b.size>5*1024*1024){reject(new Error("Ảnh sau khi nén vẫn lớn hơn 5MB."));return}
-    resolve(b)
-   },"image/jpeg",0.82)
-  };
-  img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Không mở được ảnh này. Hãy thử ảnh JPG hoặc PNG."))};
-  img.src=url;
- });
-}
-function pathFromUrl(url){const p=String(url||"").split("/"+BUCKET+"/")[1];return p?decodeURIComponent(p.split("?")[0]):null}
-function imgErr(e){
- const m=fmtErr(e);
- if(/bucket not found/i.test(m))return "Chưa tạo bucket \"product-images\" trong Supabase Storage.";
- if(/row-level security|not authorized|permission|policy/i.test(m))return "Chưa có quyền tải ảnh lên (kiểm tra policy của Storage).";
- if(/image_url/i.test(m))return "Bảng products chưa có cột image_url. Hãy chạy SQL nâng cấp 2.4 trong Supabase.";
- if(/failed to fetch|network/i.test(m))return "Mất kết nối mạng khi tải ảnh. Hãy thử lại.";
- return m;
-}
-async function uploadImage(productId,blob){
- const path=`${store.id}/${productId}-${Date.now()}.jpg`;
- const {error}=await db.storage.from(BUCKET).upload(path,blob,{contentType:"image/jpeg",cacheControl:"31536000",upsert:false});
- if(error)throw error;
- return db.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
-}
-async function removeImageFile(url){const p=pathFromUrl(url);if(!p)return;try{await db.storage.from(BUCKET).remove([p])}catch(e){}}
-async function attachImage(productId,blob){
- let url="";
- try{
-  url=await uploadImage(productId,blob);
-  const {error}=await db.from("products").update({image_url:url}).eq("id",productId).eq("store_id",store.id);
-  if(error){await removeImageFile(url);throw error}
-  return "";
- }catch(e){return imgErr(e)}
-}
-function photoHTML(url,empty){return url?`<img class="photo-preview" src="${esc(url)}" alt="Ảnh sản phẩm">`:`<div class="photo-empty">${empty}</div>`}
-async function onPickNew(input){
- const f=input.files&&input.files[0];input.value="";
- if(!f)return;
- try{
-  const blob=await compressImage(f);
-  if(newImg)URL.revokeObjectURL(newImg.url);
-  newImg={blob,url:URL.createObjectURL(blob)};
-  $("newPhotoArea").innerHTML=photoHTML(newImg.url);
-  $("clearNewBtn").style.display="block";
-  msg("")
- }catch(e){msg("Ảnh không dùng được: "+fmtErr(e),true)}
-}
-function clearNewPhoto(){
- if(newImg)URL.revokeObjectURL(newImg.url);
- newImg=null;
- $("newPhotoArea").innerHTML=photoHTML("","Chưa chọn ảnh");
- $("clearNewBtn").style.display="none";
-}
-async function onPickEdit(input){
- const f=input.files&&input.files[0];input.value="";
- if(!f||!editImg)return;
- try{
-  const blob=await compressImage(f);
-  if(editImg.blob)URL.revokeObjectURL(editImg.url);
-  editImg.blob=blob;editImg.url=URL.createObjectURL(blob);editImg.clear=false;
-  refreshEditPhoto()
- }catch(e){msg("Ảnh không dùng được: "+fmtErr(e),true)}
-}
-function clearEditPhoto(){
- if(!editImg)return;
- if(editImg.blob)URL.revokeObjectURL(editImg.url);
- editImg.blob=null;editImg.url="";editImg.clear=true;
- refreshEditPhoto()
-}
-function refreshEditPhoto(){$("editPhotoArea").innerHTML=photoHTML(editImg.url,editImg.clear?"Ảnh sẽ bị xóa khi bạn bấm Lưu":"Sản phẩm chưa có ảnh")}
-function viewImage(id){
- const p=products.find(x=>x.id===id),u=safeUrl(p?.image_url);
- if(!u)return;
- $("modalRoot").innerHTML=`<div class="modal" onclick="closeModal()"><div class="modalbox viewer" onclick="event.stopPropagation()"><h3>${esc(p.name)}</h3><img src="${esc(u)}" alt="${esc(p.name)}"><button class="light" onclick="closeModal()">Đóng</button></div></div>`;
+async function auth(type){
+ const email=document.getElementById('email').value.trim();
+ const password=document.getElementById('password').value;
+ if(!email||!password)return alert('请输入邮箱和密码');
+ const result=type==='login'
+ ?await db.auth.signInWithPassword({email,password})
+ :await db.auth.signUp({email,password});
+ if(result.error)return authMsg.innerText=result.error.message;
+ if(type==='register'&&!result.data.session){
+ authMsg.innerText='注册成功，请检查邮箱确认后登录';return;
+ }
+ user=result.data.user;
+ await initStore();
 }
 
-/* ===== ĐĂNG NHẬP ===== */
-function authErr(e){
- const m=fmtErr(e);
- if(/Invalid login/i.test(m))return "Email hoặc mật khẩu không đúng.";
- if(/Email not confirmed/i.test(m))return "Email chưa được xác nhận. Hãy kiểm tra hộp thư.";
- if(/already registered/i.test(m))return "Email này đã được đăng ký. Hãy đăng nhập.";
- if(/rate limit/i.test(m))return "Thao tác quá nhanh. Vui lòng thử lại sau ít phút.";
- return m;
+async function initStore(){
+ const {data,error}=await db.from('stores').select('*').eq('owner_id',user.id).limit(1).maybeSingle();
+ if(error)return alert(error.message);
+ if(data)store=data;
+ else{
+ const name=prompt('请输入店铺名称');
+ if(!name)return;
+ const r=await db.from('stores').insert({owner_id:user.id,store_name:name}).select().single();
+ if(r.error)return alert(r.error.message);
+ store=r.data;
+ }
+ login.style.display='none';
+ app.style.display='block';
+ await loadData();
 }
-async function signUp(btn){await guard(btn,async()=>{
- const email=val("email"),password=$("password").value;
- if(!email||password.length<6){msg("Vui lòng nhập email và mật khẩu ít nhất 6 ký tự.",true);return}
- const {data,error}=await db.auth.signUp({email,password});
- if(error){msg(authErr(error),true);return}
- if(data.session){user=data.user;await openApp()}else msg("Đăng ký thành công. Hãy xác nhận email rồi đăng nhập.")
-})}
-async function signIn(btn){await guard(btn,async()=>{
- const email=val("email"),password=$("password").value;
- if(!email||!password){msg("Vui lòng nhập email và mật khẩu.",true);return}
- const {data,error}=await db.auth.signInWithPassword({email,password});
- if(error){msg(authErr(error),true);return}
- user=data.user;await openApp()
-})}
-async function signOut(){
+
+async function logout(){
  await db.auth.signOut();
- user=null;store=null;products=[];transactions=[];expenses=[];
- $("app").classList.add("hidden");$("auth").classList.remove("hidden");
- $("password").value="";msg("Đã đăng xuất.")
+ location.reload();
 }
-["email","password"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter")signIn()}));
 
-async function openApp(){
- $("auth").classList.add("hidden");$("app").classList.remove("hidden");
- $("accountInfo").textContent="Tài khoản: "+user.email;
- const {data,error}=await db.from("stores").select("*").order("created_at",{ascending:true}).limit(1);
- if(error){msg("Lỗi tải cửa hàng: "+error.message,true);return}
- if(!data||!data.length){$("storeSetup").classList.remove("hidden");$("storeArea").classList.add("hidden");return}
- store=data[0];await loadData()
+function show(id,btn){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('show'));
+ document.getElementById(id).classList.add('show');
+ document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('active'));
+ btn.classList.add('active');
 }
-async function createStore(btn){await guard(btn,async()=>{
- const name=val("storeName");
- if(!name){msg("Vui lòng nhập tên cửa hàng.",true);return}
- const {data,error}=await db.from("stores").insert({owner_id:user.id,store_name:name}).select().single();
- if(error){msg("Không tạo được cửa hàng: "+error.message,true);return}
- store=data;await loadData()
-})}
+
 async function loadData(){
  if(!store)return;
- $("storeSetup").classList.add("hidden");$("storeArea").classList.remove("hidden");
- $("storeTitle").textContent="🏪 "+store.store_name;
- const [pr,tr,ex]=await Promise.all([
-  db.from("products").select("*").eq("store_id",store.id).order("created_at",{ascending:false}),
-  db.from("inventory_transactions").select("*").eq("store_id",store.id).order("created_at",{ascending:false}),
-  db.from("expenses").select("*").eq("store_id",store.id).order("expense_date",{ascending:false})
+ const sid=store.id;
+ const [p,t,e]=await Promise.all([
+ db.from('products').select('*').eq('store_id',sid).order('created_at',{ascending:false}),
+ db.from('inventory_transactions').select('*').eq('store_id',sid).order('created_at',{ascending:false}),
+ db.from('expenses').select('*').eq('store_id',sid).order('expense_date',{ascending:false})
  ]);
- if(pr.error||tr.error||ex.error){
-  msg("Lỗi tải dữ liệu: "+(pr.error?.message||tr.error?.message||ex.error?.message)+(ex.error&&!pr.error&&!tr.error?". Chỉ phần Chi phí bị ảnh hưởng, hãy kiểm tra bảng/RLS của expenses.":""),true);
-  if(pr.error||tr.error)return;
- }
- products=pr.data||[];transactions=tr.data||[];expenses=ex.data||[];render()
+ if(p.error||t.error||e.error)return alert('读取数据失败：'+(p.error||t.error||e.error).message);
+ products=p.data||[];
+ transactions=t.data||[];
+ expenses=e.data||[];
+ render();
 }
 
-/* ===== SẢN PHẨM ===== */
-async function addProduct(btn){await guard(btn,async()=>{
- const name=val("pname"),cost=Number(val("pcost")),price=Number(val("pprice")),stock=Number(val("pstock"));
- if(!name||val("pcost")===""||val("pprice")===""||val("pstock")===""||cost<0||price<=0||stock<0||!Number.isFinite(stock)){msg("Vui lòng nhập thông tin sản phẩm hợp lệ.",true);return}
- if(price<cost&&!confirm("Giá bán thấp hơn giá nhập (bán lỗ). Vẫn lưu sản phẩm?"))return;
- const {data,error}=await db.from("products").insert({store_id:store.id,name,cost_price:cost,selling_price:price,stock:0}).select().single();
- if(error){msg("Lỗi lưu sản phẩm: "+error.message,true);return}
- let imgProblem="";
- if(newImg)imgProblem=await attachImage(data.id,newImg.blob);
- let stockProblem="";
- if(stock>0){
-  const {error:e}=await db.rpc("record_inventory_transaction",{p_store_id:store.id,p_product_id:data.id,p_type:"purchase",p_quantity:stock,p_unit_price:cost});
-  if(e)stockProblem="Sản phẩm đã tạo nhưng nhập tồn kho ban đầu chưa thành công: "+e.message;
- }
- ["pname","pcost","pprice","pstock"].forEach(id=>$(id).value="");
- clearNewPhoto();
- const notes=[stockProblem,imgProblem?"Sản phẩm đã được lưu nhưng ảnh chưa tải lên được: "+imgProblem:""].filter(Boolean);
- msg(notes.length?notes.join("\n"):"Đã lưu sản phẩm.",notes.length>0);
- await loadData()
-})}
-function closeModal(){
- if(editImg&&editImg.blob)URL.revokeObjectURL(editImg.url);
- editImg=null;$("modalRoot").innerHTML="";
-}
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
-
-function openProductEdit(id){
- const p=products.find(x=>x.id===id);if(!p)return;
- const cur=safeUrl(p.image_url);
- editImg={blob:null,url:cur,clear:false,orig:cur};
- $("modalRoot").innerHTML=`<div class="modal"><div class="modalbox">
- <h3>✏️ Sửa sản phẩm</h3>
- <label>Tên sản phẩm</label><input id="editName" value="${esc(p.name)}">
- <label>Giá nhập (₫)</label><input id="editCost" type="number" min="0" inputmode="decimal" value="${Number(p.cost_price)}">
- <label>Giá bán (₫)</label><input id="editPrice" type="number" min="0" inputmode="decimal" value="${Number(p.selling_price)}">
- <div class="photo-box">
-  <label style="margin-top:0">📷 Ảnh sản phẩm</label>
-  <div id="editPhotoArea"></div>
-  <div class="photo-actions">
-   <button type="button" class="secondary" onclick="$('camEdit').click()">📸 Chụp ảnh</button>
-   <button type="button" class="secondary" onclick="$('galEdit').click()">🖼️ Chọn từ thư viện</button>
-  </div>
-  <button type="button" class="light" onclick="clearEditPhoto()">🗑️ Xóa ảnh</button>
-  <input id="camEdit" type="file" accept="image/*" capture="environment" class="hidden" onchange="onPickEdit(this)">
-  <input id="galEdit" type="file" accept="image/*" class="hidden" onchange="onPickEdit(this)">
- </div>
- <p class="muted">Tồn kho hiện tại: ${esc(p.stock)}. Muốn thay đổi tồn kho, hãy dùng chức năng Nhập hàng.</p>
- <button onclick="saveProduct('${esc(p.id)}',this)">Lưu thay đổi</button>
- <button class="light" onclick="closeModal()">Đóng</button></div></div>`;
- refreshEditPhoto();
-}
-async function saveProduct(id,btn){await guard(btn,async()=>{
- const name=val("editName"),cost=Number(val("editCost")),price=Number(val("editPrice"));
- if(!name||cost<0||price<=0){msg("Vui lòng nhập tên và giá hợp lệ.",true);return}
- const {error}=await db.from("products").update({name,cost_price:cost,selling_price:price}).eq("id",id).eq("store_id",store.id);
- if(error){msg("Không sửa được sản phẩm: "+error.message,true);return}
- let problem="";const img=editImg;
- if(img&&img.blob){
-  problem=await attachImage(id,img.blob);
-  if(!problem&&img.orig)await removeImageFile(img.orig);
- }else if(img&&img.clear&&img.orig){
-  const {error:e}=await db.from("products").update({image_url:null}).eq("id",id).eq("store_id",store.id);
-  if(e)problem=imgErr(e);else await removeImageFile(img.orig);
- }
- closeModal();
- msg(problem?"Đã lưu thông tin sản phẩm nhưng ảnh chưa cập nhật được: "+problem:"Đã cập nhật sản phẩm.",!!problem);
- await loadData()
-})}
-async function deleteProduct(id){
- const p=products.find(x=>x.id===id);if(!p)return;
- if(!confirm(`Xóa sản phẩm "${p.name}"? Chỉ xóa được sản phẩm chưa có giao dịch.`))return;
- const {count,error:ce}=await db.from("inventory_transactions").select("id",{count:"exact",head:true}).eq("product_id",id).eq("store_id",store.id);
- if(ce){msg(ce.message,true);return}
- if(count>0){msg("Sản phẩm đã có giao dịch, không thể xóa.",true);return}
- const {error}=await db.from("products").delete().eq("id",id).eq("store_id",store.id);
- if(error){msg(error.message,true);return}
- if(p.image_url)await removeImageFile(p.image_url);
- msg("Đã xóa sản phẩm.");await loadData()
-}
-
-/* ===== GIAO DỊCH ===== */
-function fillPrice(kind){
- const buy=kind==="buy",p=products.find(x=>x.id===$(buy?"buyProduct":"sellProduct").value);
- if(!p)return;
- $(buy?"buyCost":"sellPrice").value=Number(buy?p.cost_price:p.selling_price)||"";
-}
-async function doTransaction(type,btn){await guard(btn,async()=>{
- const buy=type==="purchase";
- const id=$(buy?"buyProduct":"sellProduct").value;
- const qty=Number(val(buy?"buyQty":"sellQty"));
- const raw=val(buy?"buyCost":"sellPrice"),price=Number(raw);
- if(!id||!(qty>0)||raw===""||price<0||(!buy&&price===0)){msg("Vui lòng kiểm tra số lượng và đơn giá.",true);return}
- const p=products.find(x=>x.id===id);
- if(!buy&&p&&qty>Number(p.stock)){msg(`Không đủ hàng: "${p.name}" chỉ còn ${Number(p.stock)} sản phẩm.`,true);return}
- if(!buy&&p&&price<Number(p.cost_price)&&!confirm("Giá bán thấp hơn giá nhập (bán lỗ). Vẫn ghi nhận?"))return;
- const {error}=await db.rpc("record_inventory_transaction",{p_store_id:store.id,p_product_id:id,p_type:type,p_quantity:qty,p_unit_price:price});
- if(error){msg("Giao dịch không thành công: "+error.message,true);return}
- $(buy?"buyQty":"sellQty").value="";
- msg(buy?"Đã nhập hàng thành công.":"Đã ghi nhận bán hàng thành công.");
- await loadData();fillPrice(buy?"buy":"sell")
-})}
-function openTransactionEdit(id){
- const t=transactions.find(x=>x.id===id);if(!t)return;
- $("modalRoot").innerHTML=`<div class="modal"><div class="modalbox">
- <h3>✏️ Sửa giao dịch</h3>
- <p class="muted">Sản phẩm: ${esc(pname(t.product_id))}</p>
- <label>Số lượng</label><input id="txQty" type="number" min="0.0001" step="any" inputmode="decimal" value="${Number(t.quantity)}">
- <label>Đơn giá (₫)</label><input id="txPrice" type="number" min="0" step="any" inputmode="decimal" value="${Number(t.unit_price)}">
- <button onclick="saveTransaction('${esc(t.id)}',this)">Lưu thay đổi</button>
- <button class="light" onclick="closeModal()">Đóng</button></div></div>`
-}
-async function saveTransaction(id,btn){await guard(btn,async()=>{
- const qty=Number(val("txQty")),price=Number(val("txPrice"));
- if(!(qty>0)||price<0){msg("Số lượng hoặc đơn giá không hợp lệ.",true);return}
- const {error}=await db.rpc("update_inventory_transaction",{p_store_id:store.id,p_transaction_id:id,p_quantity:qty,p_unit_price:price});
- if(error){msg("Sửa không thành công: "+error.message,true);return}
- closeModal();msg("Đã cập nhật giao dịch.");await loadData()
-})}
-async function deleteTransaction(id){
- if(!confirm("Xóa giao dịch này? Tồn kho sẽ được điều chỉnh ngược lại."))return;
- const {error}=await db.rpc("delete_inventory_transaction",{p_store_id:store.id,p_transaction_id:id});
- if(error){msg("Xóa không thành công: "+error.message,true);return}
- msg("Đã xóa giao dịch.");await loadData()
-}
-
-/* ===== CHI PHÍ ===== */
-function catOptions(sel){return Object.keys(CATS).map(c=>`<option value="${c}" ${c===sel?"selected":""}>${CATS[c]}</option>`).join("")}
-async function addExpense(btn){await guard(btn,async()=>{
- const date=val("expenseDate"),category=val("expenseCategory"),description=val("expenseDescription"),amount=Number(val("expenseAmount"));
- if(!date||!category||!(amount>0)){msg("Vui lòng nhập ngày, loại chi phí và số tiền hợp lệ.",true);return}
- const {error}=await db.from("expenses").insert({store_id:store.id,expense_date:date,category,description,amount});
- if(error){msg("Không lưu được chi phí: "+error.message+". Hãy kiểm tra quyền RLS của bảng expenses.",true);return}
- $("expenseDescription").value="";$("expenseAmount").value="";
- msg("Đã lưu chi phí.");await loadData()
-})}
-function openExpenseEdit(id){
- const e=expenses.find(x=>x.id===id);if(!e)return;
- const known=CATS[e.category]?"":`<option value="${esc(e.category)}" selected>${esc(e.category)}</option>`;
- $("modalRoot").innerHTML=`<div class="modal"><div class="modalbox">
- <h3>✏️ Sửa chi phí</h3>
- <label>Ngày</label><input id="editExpenseDate" type="date" value="${esc(e.expense_date)}">
- <label>Loại chi phí</label><select id="editExpenseCategory">${known}${catOptions(e.category)}</select>
- <label>Mô tả</label><input id="editExpenseDescription" value="${esc(e.description||"")}" placeholder="Mô tả chi phí">
- <label>Số tiền (₫)</label><input id="editExpenseAmount" type="number" min="0.01" step="any" inputmode="decimal" value="${Number(e.amount)}">
- <button onclick="saveExpense('${esc(e.id)}',this)">Lưu thay đổi</button>
- <button class="light" onclick="closeModal()">Đóng</button></div></div>`
-}
-async function saveExpense(id,btn){await guard(btn,async()=>{
- const expense_date=val("editExpenseDate"),category=val("editExpenseCategory"),description=val("editExpenseDescription"),amount=Number(val("editExpenseAmount"));
- if(!expense_date||!category||!(amount>0)){msg("Thông tin chi phí không hợp lệ.",true);return}
- const {error}=await db.from("expenses").update({expense_date,category,description,amount}).eq("id",id).eq("store_id",store.id);
- if(error){msg("Không sửa được chi phí: "+error.message,true);return}
- closeModal();msg("Đã cập nhật chi phí.");await loadData()
-})}
-async function deleteExpense(id){
- if(!confirm("Bạn có chắc muốn xóa khoản chi phí này?"))return;
- const {error}=await db.from("expenses").delete().eq("id",id).eq("store_id",store.id);
- if(error){msg("Không xóa được chi phí: "+error.message,true);return}
- msg("Đã xóa chi phí.");await loadData()
-}
-
-/* ===== PHÂN TÍCH LÃI LỖ ===== */
-function calc(start,end){
- const sales=transactions.filter(t=>{const d=dateKey(t.created_at);return t.transaction_type==="sale"&&d>=start&&d<=end});
- const revenue=sales.reduce((s,t)=>s+Number(t.quantity)*Number(t.unit_price),0);
- const gross=sales.reduce((s,t)=>s+Number(t.quantity)*(Number(t.unit_price)-pcostOf(t.product_id)),0);
- const exp=expenses.filter(e=>{const d=String(e.expense_date||"").slice(0,10);return d>=start&&d<=end}).reduce((s,e)=>s+Number(e.amount||0),0);
- const net=gross-exp;
- return {revenue,gross,exp,net,margin:revenue>0?net/revenue*100:null};
-}
-function resultHTML(d){
- const c=d.net>=0?"good":"bad";
- return line("Doanh thu",money(d.revenue))+line("Lợi nhuận gộp",money(d.gross))+line("Chi phí vận hành",money(d.exp))
- +`<div class="statline"><span>Lợi nhuận ròng</span><b class="${c}">${money(d.net)}</b></div>`
- +`<div class="big"><small class="muted">Tỷ suất lợi nhuận ròng</small><strong class="${c}">${d.margin===null?"—":d.margin.toFixed(2)+"%"}</strong></div>`;
-}
-function renderAnalytics(){
- const day=$("analysisDate").value,month=$("analysisMonth").value;
- if(day)$("dailyAnalytics").innerHTML=resultHTML(calc(day,day));
- if(month){
-  const [y,m]=month.split("-").map(Number),last=new Date(y,m,0).getDate();
-  $("monthlyAnalytics").innerHTML=resultHTML(calc(month+"-01",month+"-"+String(last).padStart(2,"0")));
- }
-}
-
-/* ===== TỔNG QUAN ===== */
 function render(){
- const today=localDate();
- const todaySales=transactions.filter(t=>t.transaction_type==="sale"&&dateKey(t.created_at)===today);
- const todayRevenue=todaySales.reduce((a,t)=>a+Number(t.quantity)*Number(t.unit_price),0);
- const todayProfit=todaySales.reduce((a,t)=>a+Number(t.quantity)*(Number(t.unit_price)-pcostOf(t.product_id)),0);
- const stockQty=products.reduce((a,p)=>a+Number(p.stock),0);
- const stockCost=products.reduce((a,p)=>a+Number(p.stock)*Number(p.cost_price),0);
- const stockSell=products.reduce((a,p)=>a+Number(p.stock)*Number(p.selling_price),0);
- const filtered=transactions.filter(t=>inPeriod(t.created_at));
- const sales=filtered.filter(t=>t.transaction_type==="sale");
- const buys=filtered.filter(t=>t.transaction_type==="purchase");
- const fExp=expenses.filter(e=>inPeriod(e.expense_date+"T12:00:00"));
- const revenue=sales.reduce((a,t)=>a+Number(t.quantity)*Number(t.unit_price),0);
- const purchaseTotal=buys.reduce((a,t)=>a+Number(t.quantity)*Number(t.unit_price),0);
- const gross=sales.reduce((a,t)=>a+Number(t.quantity)*(Number(t.unit_price)-pcostOf(t.product_id)),0);
- const expTotal=fExp.reduce((a,e)=>a+Number(e.amount),0);
- const net=gross-expTotal;
- const qtySold=sales.reduce((a,t)=>a+Number(t.quantity),0);
- const qtyBought=buys.reduce((a,t)=>a+Number(t.quantity),0);
+ productCount.innerText=products.length;
+ stockTotal.innerText=products.reduce((s,p)=>s+Number(p.stock||0),0);
+ const sales=transactions.filter(t=>t.transaction_type==='sale');
+ const revenue=sales.reduce((s,t)=>s+Number(t.quantity)*Number(t.unit_price),0);
+ const costs=sales.reduce((s,t)=>{
+ const p=products.find(x=>x.id===t.product_id);
+ return s+Number(t.quantity)*Number(p?.cost_price||0);
+ },0);
+ const exp=expenses.reduce((s,e)=>s+Number(e.amount||0),0);
+ salesTotal.innerText=money(revenue);
+ expenseTotal.innerText=money(exp);
+ profitTotal.innerText=money(revenue-costs-exp);
 
- $("periodLabel").textContent="Đang xem: "+PERIODS[period];
- document.querySelectorAll("#periodBtns button").forEach(b=>b.classList.toggle("on",b.dataset.p===period));
- $("revenue").textContent=money(todayRevenue);
- $("profit").textContent=money(todayProfit);
- $("count").textContent=products.length;
- $("stockValue").textContent=money(stockCost);
+ productList.innerHTML='<table><tr><th>产品</th><th>成本</th><th>售价</th><th>库存</th><th>操作</th></tr>'+
+ products.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(p.cost_price)}</td><td>${money(p.selling_price)}</td><td>${p.stock}</td><td><button onclick="removeProduct('${p.id}')">删除</button></td></tr>`).join('')+'</table>';
 
- $("summary").innerHTML=
-  line("Doanh thu bán hàng",money(revenue))+line("Tiền nhập hàng (tham khảo)",money(purchaseTotal))+
-  line("Lợi nhuận gộp ước tính",money(gross))+line("Chi phí vận hành",money(expTotal))+
-  `<div class="statline"><span><b>Lợi nhuận ròng</b></span><b class="${net>=0?"good":"bad"}">${net>=0?"Lãi: ":"Lỗ: "}${money(Math.abs(net))}</b></div>`+
-  line("Số giao dịch bán",sales.length)+line("Số lượng hàng đã bán",qtySold)+
-  line("Số giao dịch nhập",buys.length)+line("Số lượng hàng đã nhập",qtyBought);
+ txProduct.innerHTML=products.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+ lowStock.innerHTML=products.filter(p=>Number(p.stock)<=5).map(p=>esc(p.name)+'：库存 '+p.stock).join('<br>')||'库存正常';
 
- const agg={};
- sales.forEach(t=>{const a=agg[t.product_id]||(agg[t.product_id]={q:0,r:0,g:0});
-  a.q+=Number(t.quantity);a.r+=Number(t.quantity)*Number(t.unit_price);a.g+=Number(t.quantity)*(Number(t.unit_price)-pcostOf(t.product_id))});
- $("topProducts").innerHTML=Object.entries(agg).sort((a,b)=>b[1].r-a[1].r).slice(0,5).map(([id,a],i)=>
-  `<div class="item"><b>${i+1}. ${esc(pname(id))}</b><br><span class="muted">Đã bán: ${a.q} · Doanh thu: ${money(a.r)} · Lãi gộp: ${money(a.g)}</span></div>`
- ).join("")||"Chưa có đơn bán trong kỳ này.";
-
- $("inventorySummary").innerHTML=
-  line("Số loại sản phẩm",products.length)+line("Tổng số lượng tồn kho",stockQty)+
-  line("Giá trị tồn kho theo giá nhập",money(stockCost))+line("Giá trị tồn kho theo giá bán",money(stockSell));
-
- $("alerts").innerHTML=products.filter(p=>Number(p.stock)<=LOW_STOCK).sort((a,b)=>a.stock-b.stock)
-  .map(p=>`<div class="item">${Number(p.stock)<=0?"🚫":"⚠️"} ${esc(p.name)}: ${Number(p.stock)<=0?"đã hết hàng":"còn "+Number(p.stock)+" sản phẩm"}</div>`).join("")
-  ||"Chưa có sản phẩm sắp hết hàng.";
-
- const q=($("searchProduct").value||"").trim().toLowerCase();
- $("productList").innerHTML=products.filter(p=>!q||p.name.toLowerCase().includes(q)).map(p=>{
-  const u=safeUrl(p.image_url);
-  const thumb=u
-   ?`<img class="product-photo" src="${esc(u)}" alt="${esc(p.name)}" loading="lazy" onclick="viewImage('${esc(p.id)}')" onerror="this.outerHTML='<div class=&quot;product-photo ph&quot;>📦</div>'">`
-   :`<div class="product-photo ph">📦</div>`;
-  return `<div class="item"><div class="pitem">${thumb}<div class="pbody">
-   <b>${esc(p.name)}</b><br>
-   <span class="muted">Giá nhập: ${money(p.cost_price)} · Giá bán: ${money(p.selling_price)} · Tồn: ${esc(p.stock)}</span>
-   <div class="actions">
-    <button class="secondary" onclick="openProductEdit('${esc(p.id)}')">Sửa</button>
-    <button class="danger" onclick="deleteProduct('${esc(p.id)}')">Xóa</button>
-   </div></div></div></div>`}).join("")||"Chưa có sản phẩm.";
-
- const prevBuy=$("buyProduct").value,prevSell=$("sellProduct").value;
- const options=products.map(p=>`<option value="${esc(p.id)}">${esc(p.name)} (Tồn: ${esc(p.stock)})</option>`).join("");
- $("buyProduct").innerHTML=options;$("sellProduct").innerHTML=options;
- if(products.some(p=>p.id===prevBuy))$("buyProduct").value=prevBuy;
- if(products.some(p=>p.id===prevSell))$("sellProduct").value=prevSell;
- if(!$("buyCost").value)fillPrice("buy");
- if(!$("sellPrice").value)fillPrice("sell");
-
- $("history").innerHTML=transactions.slice(0,30).map(t=>{
-  const buy=t.transaction_type==="purchase";
-  return `<div class="item"><b>${buy?"📥 Nhập hàng":"🛒 Bán hàng"} · ${esc(pname(t.product_id))}</b><br>
-   <span class="muted">Số lượng: ${esc(t.quantity)} · Đơn giá: ${money(t.unit_price)} · ${new Date(t.created_at).toLocaleString("vi-VN")}</span>
-   <div class="actions">
-    <button class="secondary" onclick="openTransactionEdit('${esc(t.id)}')">Sửa</button>
-    <button class="danger" onclick="deleteTransaction('${esc(t.id)}')">Xóa</button>
-   </div></div>`}).join("")||"Chưa có giao dịch.";
-
- $("expenseList").innerHTML=fExp.map(e=>`
-  <div class="item"><b>💸 ${esc(catName(e.category))} · ${money(e.amount)}</b><br>
-   <span class="muted">${esc(e.expense_date)} · ${esc(e.description||"Không có mô tả")}</span>
-   <div class="actions">
-    <button class="secondary" onclick="openExpenseEdit('${esc(e.id)}')">Sửa</button>
-    <button class="danger" onclick="deleteExpense('${esc(e.id)}')">Xóa</button>
-   </div></div>`).join("")||"Chưa có khoản chi phí nào trong kỳ này.";
-
- if(tab==="analytics")renderAnalytics();
+ txList.innerHTML=transactions.map(t=>`<p>${t.transaction_type==='sale'?'销售':'进货'} | ${esc(products.find(p=>p.id===t.product_id)?.name||'产品')} | ${t.quantity} × ${money(t.unit_price)}</p>`).join('');
+ expenseList.innerHTML=expenses.map(e=>`<p>${esc(e.expense_date||'')} | ${esc(e.category||'')} | ${esc(e.description||'')} | ${money(e.amount)}</p>`).join('');
 }
 
-/* ===== KHỞI TẠO ===== */
-$("expenseCategory").innerHTML=catOptions();
-$("expenseDate").value=localDate();
-$("analysisDate").value=localDate();
-$("analysisMonth").value=localDate().slice(0,7);
-show("home");
-db.auth.getSession().then(async({data})=>{
- if(data.session){user=data.session.user;await openApp()}
-});
+function esc(s){
+ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function addProduct(){
+ const name=pname.value.trim(),cost=Number(pcost.value),price=Number(pprice.value),stock=Number(pstock.value);
+ if(!name||cost<0||price<0||stock<0)return alert('请正确填写产品资料');
+ const r=await db.from('products').insert({store_id:store.id,name,cost_price:cost,selling_price:price,stock});
+ if(r.error)return alert(r.error.message);
+ pname.value=pcost.value=pprice.value=pstock.value='';
+ await loadData();
+}
+
+async function addTransaction(){
+ const product_id=txProduct.value,type=txType.value;
+ const quantity=Number(txQty.value),unit_price=Number(txPrice.value);
+ if(!product_id||quantity<=0||unit_price<0)return alert('请检查交易资料');
+ const r=await db.rpc('record_inventory_transaction',{
+ p_store_id:store.id,p_product_id:product_id,
+ p_type:type,p_quantity:quantity,p_unit_price:unit_price
+ });
+ if(r.error)return alert(r.error.message);
+ txQty.value=txPrice.value='';
+ await loadData();
+}
+
+async function addExpense(){
+ const amount=Number(expenseAmount.value);
+ if(amount<=0)return alert('费用金额必须大于0');
+ const r=await db.from('expenses').insert({
+ store_id:store.id,
+ expense_date:new Date().toISOString().slice(0,10),
+ category:expenseCategory.value,
+ description:expenseDesc.value,
+ amount
+ });
+ if(r.error)return alert(r.error.message);
+ expenseDesc.value=expenseAmount.value='';
+ await loadData();
+}
+
+async function removeProduct(id){
+ if(!confirm('确定删除产品？'))return;
+ const r=await db.from('products').delete().eq('id',id).eq('store_id',store.id);
+ if(r.error)return alert(r.error.message);
+ await loadData();
+}
+
+function exportExcel(type){
+ let data={products,transactions,expenses};
+ if(type==='all'){
+  data={产品:products,交易:transactions,费用:expenses};
+ }else data=data[type];
+ const wb=XLSX.utils.book_new();
+ if(type==='all'){
+  Object.entries(data).forEach(([name,rows])=>{
+   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),name);
+  });
+ }else{
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(data),type);
+ }
+ XLSX.writeFile(wb,'Store_'+type+'.xlsx');
+}
+
+function dailyReport(){
+ const date=document.getElementById('reportDate').value||new Date().toISOString().slice(0,10);
+ const tx=transactions.filter(t=>(t.created_at||'').slice(0,10)===date);
+ const ex=expenses.filter(e=>e.expense_date===date);
+ const sales=tx.filter(t=>t.transaction_type==='sale');
+ const buys=tx.filter(t=>t.transaction_type==='purchase');
+ const revenue=sales.reduce((s,t)=>s+Number(t.quantity)*Number(t.unit_price),0);
+ const purchase=buys.reduce((s,t)=>s+Number(t.quantity)*Number(t.unit_price),0);
+ const cost=sales.reduce((s,t)=>{
+  const p=products.find(x=>x.id===t.product_id);
+  return s+Number(t.quantity)*Number(p?.cost_price||0);
+ },0);
+ const expense=ex.reduce((s,e)=>s+Number(e.amount),0);
+ dailyReport.innerHTML=`
+ <h3>${date} 经营日报</h3>
+ <p>销售收入：${money(revenue)}</p>
+ <p>进货金额：${money(purchase)}</p>
+ <p>费用：${money(expense)}</p>
+ <p>估算毛利：${money(revenue-cost)}</p>
+ <p>估算净利润：${money(revenue-cost-expense)}</p>`;
+}
+
+function analyzeBusiness(){
+ const result=[];
+ const low=products.filter(p=>Number(p.stock)<=5);
+ if(low.length)result.push('库存提醒：'+low.map(p=>p.name).join('、')+' 库存不高于5。');
+ const noSales=products.filter(p=>!transactions.some(t=>t.product_id===p.id&&t.transaction_type==='sale'));
+ if(noSales.length)result.push('销售记录提醒：以下产品没有已记录的销售，不代表一定滞销：'+noSales.map(p=>p.name).join('、'));
+ const sales=transactions.filter(t=>t.transaction_type==='sale');
+ if(!sales.length)result.push('目前没有销售记录，暂时无法分析销售表现。');
+ else{
+  const revenue=sales.reduce((s,t)=>s+Number(t.quantity)*Number(t.unit_price),0);
+  result.push('累计销售收入：'+money(revenue));
+ }
+ aiResult.innerHTML=result.map(x=>'<p>• '+esc(x)+'</p>').join('');
+}
+
+function backupJSON(){
+ const backup={
+  version:'2.5',created_at:new Date().toISOString(),
+  store,products,transactions,expenses
+ };
+ const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download='store-backup-'+Date.now()+'.json';
+ a.click();
+ URL.revokeObjectURL(a.href);
+}
+
+async function start(){
+ const {data}=await db.auth.getSession();
+ if(data.session){
+  user=data.session.user;
+  await initStore();
+ }
+}
+start();
 </script>
 </body>
 </html>
