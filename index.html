@@ -25,7 +25,7 @@ button.action{background:#2563eb;color:white;border:0;padding:12px 18px;border-r
 @media(min-width:640px){button.action{width:auto}}
 button.danger{background:#dc2626}
 button.secondary{background:#475569}
-.table-container{width:100%;overflow-x:auto}
+.table-container{width:100% ;overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:500px}
 td,th{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left}
 th{background:#f8fafc;font-weight:600;color:#475569}
@@ -217,7 +217,6 @@ let expenses = [];
 
 const formatMoney = n => Number(n || 0).toLocaleString('en-US', {maximumFractionDigits: 2});
 
-// 拍照/选图提示更新函数
 function updateFileName(input) {
   const display = document.getElementById('fileNameDisplay');
   if (input.files && input.files[0]) {
@@ -259,7 +258,7 @@ async function handleAuth(type) {
   await initStoreContext();
 }
 
-// Khởi tạo cửa hàng
+// Khởi tạo cửa hàng & Kiểm tra trạng thái kích hoạt từ xa (Kill Switch)
 async function initStoreContext() {
   const {data, error} = await db.from('stores').select('*').eq('owner_id', currentUser.id).limit(1).maybeSingle();
   if(error) {
@@ -268,11 +267,18 @@ async function initStoreContext() {
   }
   
   if(data) {
+    // 远程状态检查：如果 is_active 为 false，立即强制断开并锁定
+    if(data.is_active === false) {
+      alert('⚠️ Tài khoản hoặc hệ thống của bạn đã tạm ngưng hoạt động. Vui lòng liên hệ quản trị viên để được hỗ trợ.');
+      await db.auth.signOut();
+      location.reload();
+      return;
+    }
     currentStore = data;
   } else {
     const storeName = prompt('Phát hiện bạn chưa có cửa hàng, vui lòng nhập tên cửa hàng của bạn:');
     if(!storeName) return;
-    const r = await db.from('stores').insert({owner_id: currentUser.id, store_name: storeName}).select().single();
+    const r = await db.from('stores').insert({owner_id: currentUser.id, store_name: storeName, is_active: true}).select().single();
     if(r.error) {
       alert('Tạo cửa hàng thất bại: ' + r.error.message);
       return;
