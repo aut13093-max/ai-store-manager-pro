@@ -44,7 +44,7 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 
 <header>
 <h2>AI STORE MANAGER PRO 2.5</h2>
-<p>智能店铺管理系统（直连终极版）</p>
+<p>智能店铺管理系统（原生 REST 修复版）</p>
 </header>
 
 <nav id="nav">
@@ -58,7 +58,6 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </nav>
 
 <main>
-<!-- 登录注册区块 -->
 <section id="login" class="card">
 <h3>账号登录 / 注册</h3>
 <input id="loginEmail" type="email" placeholder="邮箱地址" autocomplete="email">
@@ -68,10 +67,8 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 <p id="authMsg"></p>
 </section>
 
-<!-- 主系统界面 -->
 <div id="app" style="display:none">
 
-<!-- 1. 首页 -->
 <section id="dashboard" class="page show">
 <div class="card">
 <h3>经营概览</h3>
@@ -90,7 +87,6 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </div>
 </section>
 
-<!-- 2. 产品库存 -->
 <section id="products" class="page">
 <div class="card">
 <h3>添加/编辑产品</h3>
@@ -112,7 +108,6 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </div>
 </section>
 
-<!-- 3. 进销记录 -->
 <section id="transactions" class="page">
 <div class="card">
 <h3>记录进货 / 销售</h3>
@@ -131,7 +126,6 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </div>
 </section>
 
-<!-- 4. 费用管理 -->
 <section id="expenses" class="page">
 <div class="card">
 <h3>新增日常费用</h3>
@@ -149,7 +143,6 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </div>
 </section>
 
-<!-- 5. 报表中心 -->
 <section id="reports" class="page">
 <div class="card">
 <h3>数据导出</h3>
@@ -169,7 +162,6 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </div>
 </section>
 
-<!-- 6. AI 经营分析 -->
 <section id="ai" class="page">
 <div class="card">
 <h3>AI 本地经营分析助手</h3>
@@ -179,7 +171,6 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </div>
 </section>
 
-<!-- 7. 数据备份 -->
 <section id="backup" class="page">
 <div class="card">
 <h3>数据完整备份</h3>
@@ -195,8 +186,8 @@ th{background:#f8fafc;font-weight:600;color:#475569}
 </main>
 
 <script>
-const SUPABASE_URL = "https://owpfcmsrizmbyzimwlsk.supabase.co";
-const SUPABASE_KEY = "sb_publishable_a434FlqYzGtKIsRd_aHfA_nEUb-C1f";
+const SUPABASE_BASE = "https://owpfcmsrizmbyzimwlsk.supabase.co";
+const SUPABASE_KEY = "Sb_publishable_a434FlGqYzGtKIsRd_aHfA_nEUb-C1f";
 
 let currentStore = null;
 let currentUser = null;
@@ -207,23 +198,24 @@ let expenses = [];
 
 const formatMoney = n => Number(n || 0).toLocaleString('en-US', {maximumFractionDigits: 2});
 
-// 完美匹配 publishable key 的原生请求器
+// 核心 REST API 请求逻辑（修正针对 Publishable Key 的头部构造）
 async function apiRequest(endpoint, method = 'GET', body = null, extraHeaders = {}) {
   const headers = {
     'apikey': SUPABASE_KEY,
-    'authorization': accessToken ? `Bearer ${accessToken}` : `Bearer ${SUPABASE_KEY}`,
-    'content-type': 'application/json',
+    'Authorization': accessToken ? `Bearer ${accessToken}` : `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
     ...extraHeaders
   };
+  
   const options = { method, headers };
   if (body) options.body = JSON.stringify(body);
   
-  const res = await fetch(`${SUPABASE_URL}${endpoint}`, options);
+  const res = await fetch(`${SUPABASE_BASE}${endpoint}`, options);
   if (res.status === 204) return null;
   const text = await res.text();
   try {
     const json = JSON.parse(text);
-    if (!res.ok) throw new Error(json.message || json.error_description || JSON.stringify(json));
+    if (!res.ok) throw new Error(json.message || json.msg || json.error_description || text);
     return json;
   } catch (e) {
     if (!res.ok) throw new Error(text || e.message);
@@ -265,16 +257,16 @@ async function handleAuth(type) {
   }
 }
 
-// 初始化店铺
+// 店铺初始化
 async function initStoreContext() {
   try {
-    const stores = await apiRequest(`/rest/v1/stores?owner_id=eq.${currentUser.id}&limit=1`, 'GET');
+    const stores = await apiRequest(`/rest/v1/stores?owner_id=eq.${currentUser.id}&select=*`, 'GET');
     if (stores && stores.length > 0) {
       currentStore = stores[0];
     } else {
       const storeName = prompt('检测到您尚未创建店铺，请输入您的店铺名称：');
       if(!storeName) return;
-      const newStores = await apiRequest(`/rest/v1/stores`, 'POST', { owner_id: currentUser.id, store_name: storeName }, { 'prefer': 'return=representation' });
+      const newStores = await apiRequest(`/rest/v1/stores`, 'POST', { owner_id: currentUser.id, store_name: storeName }, { 'Prefer': 'return=representation' });
       currentStore = newStores[0];
     }
     
@@ -282,7 +274,7 @@ async function initStoreContext() {
     document.getElementById('app').style.display = 'block';
     await loadData();
   } catch (err) {
-    alert('初始化店铺失败: ' + err.message);
+    alert('店铺加载失败: ' + err.message);
   }
 }
 
@@ -298,16 +290,16 @@ function switchPage(id, btn) {
   btn.classList.add('active');
 }
 
-// 加载核心数据
+// 核心数据拉取
 async function loadData() {
   if(!currentStore) return;
   const sid = currentStore.id;
   
   try {
     const [p, t, e] = await Promise.all([
-      apiRequest(`/rest/v1/products?store_id=eq.${sid}&order=created_at.desc`, 'GET'),
-      apiRequest(`/rest/v1/inventory_transactions?store_id=eq.${sid}&order=created_at.desc`, 'GET'),
-      apiRequest(`/rest/v1/expenses?store_id=eq.${sid}&order=expense_date.desc`, 'GET')
+      apiRequest(`/rest/v1/products?store_id=eq.${sid}&order=created_at.desc&select=*`, 'GET'),
+      apiRequest(`/rest/v1/inventory_transactions?store_id=eq.${sid}&order=created_at.desc&select=*`, 'GET'),
+      apiRequest(`/rest/v1/expenses?store_id=eq.${sid}&order=expense_date.desc&select=*`, 'GET')
     ]);
     
     products = p || [];
@@ -316,11 +308,11 @@ async function loadData() {
     
     renderAll();
   } catch (err) {
-    alert('数据同步失败: ' + err.message);
+    alert('数据加载失败: ' + err.message);
   }
 }
 
-// 渲染视图
+// 视图渲染
 function renderAll() {
   document.getElementById('statProductCount').innerText = products.length;
   document.getElementById('statStockTotal').innerText = products.reduce((sum, p) => sum + Number(p.stock || 0), 0);
@@ -422,16 +414,16 @@ async function saveProduct() {
     const file = fileInput.files[0];
     const filePath = `${currentStore.id}/${Date.now()}_${file.name}`;
     try {
-      await fetch(`${SUPABASE_URL}/storage/v1/object/product-images/${filePath}`, {
+      await fetch(`${SUPABASE_BASE}/storage/v1/object/product-images/${filePath}`, {
         method: 'POST',
         headers: {
           'apikey': SUPABASE_KEY,
-          'authorization': `Bearer ${accessToken}`,
-          'content-type': file.type
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': file.type
         },
         body: file
       });
-      image_url = `${SUPABASE_URL}/storage/v1/object/public/product-images/${filePath}`;
+      image_url = `${SUPABASE_BASE}/storage/v1/object/public/product-images/${filePath}`;
     } catch(e) {
       alert('图片上传失败: ' + e.message);
       return;
@@ -442,11 +434,11 @@ async function saveProduct() {
     if(id) {
       const payload = {name, cost_price, selling_price, stock};
       if(image_url) payload.image_url = image_url;
-      await apiRequest(`/rest/v1/products?id=eq.${id}&store_id=eq.${currentStore.id}`, 'PATCH', payload, { 'prefer': 'return=minimal' });
+      await apiRequest(`/rest/v1/products?id=eq.${id}&store_id=eq.${currentStore.id}`, 'PATCH', payload, { 'Prefer': 'return=minimal' });
     } else {
       const payload = {store_id: currentStore.id, name, cost_price, selling_price, stock};
       if(image_url) payload.image_url = image_url;
-      await apiRequest(`/rest/v1/products`, 'POST', payload, { 'prefer': 'return=minimal' });
+      await apiRequest(`/rest/v1/products`, 'POST', payload, { 'Prefer': 'return=minimal' });
     }
     resetProductForm();
     await loadData();
@@ -482,7 +474,7 @@ function resetProductForm() {
 async function removeProduct(id) {
   if(!confirm('确定要删除该产品吗？')) return;
   try {
-    await apiRequest(`/rest/v1/products?id=eq.${id}&store_id=eq.${currentStore.id}`, 'DELETE', null, { 'prefer': 'return=minimal' });
+    await apiRequest(`/rest/v1/products?id=eq.${id}&store_id=eq.${currentStore.id}`, 'DELETE', null, { 'Prefer': 'return=minimal' });
     await loadData();
   } catch (err) {
     alert('删除失败: ' + err.message);
@@ -533,7 +525,7 @@ async function addExpense() {
       category,
       description,
       amount
-    }, { 'prefer': 'return=minimal' });
+    }, { 'Prefer': 'return=minimal' });
     document.getElementById('expenseDesc').value = '';
     document.getElementById('expenseAmount').value = '';
     await loadData();
@@ -628,7 +620,7 @@ function backupJSON() {
   URL.revokeObjectURL(url);
 }
 
-// 自动恢复会话
+// 自动会话恢复
 async function autoLogin() {
   if (accessToken) {
     try {
